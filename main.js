@@ -1,5 +1,6 @@
 const { app, ipcMain,shell } = require('electron');
-
+const fs = require('fs');
+const path = require('path');
 const configManager = require('./core/configManager');
 const { createWindow, closeWindow } = require('./core/windowManager');
 const { getSystemInfo } = require('./core/systemInfo');
@@ -21,6 +22,18 @@ app.on('ready', () => {
     });
     ipcMain.handle('get-config', () => {
         return configManager.readConfig();
+    });
+
+    ipcMain.on('upload-mp4', (event, { data }) => {
+        const savePath = path.join(__dirname, 'data', 'play.mp4');
+
+        fs.writeFile(savePath, Buffer.from(new Uint8Array(data)), (err) => {
+            if (err) {
+                console.error('Failed to save the file:', err);
+                return;
+            }
+            console.log('File saved as play.mp4:', savePath);
+        });
     });
 
     ipcMain.handle('get-system-info', () => {

@@ -40,16 +40,16 @@
             </div>
             <div class="mdui-textfield">
 
-                是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)<br/>
+                是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(不可用)<br/>
                 <label class="mdui-switch">
-                    <input id="networkTime" type="checkbox"/>
+                    <input id="networkTime" type="checkbox" disabled/>
                     <i class="mdui-switch-icon"></i>
                 </label>
 
             </div>
             <div id="tab2" style="margin-top: 16px">
                 <div class="mdui-textfield">
-                    启用高考模式：（启用后,主页面将会显示高考倒计时）<br/>
+                    启用高考模式：（启用后,主页面与钟表页面将会显示高考倒计时）<br/>
                     <label class="mdui-switch">
                         <input id="clock-mode" type="checkbox"/>
                         <i class="mdui-switch-icon"></i>
@@ -87,10 +87,11 @@
             const newConfig = {
                 "app-name": document.getElementById('appName').value,
                 "user-name": document.getElementById('userName').value,
+                "network-time": false,
                 "license-code": document.getElementById('licenseCode').value,
                 "unit-code": document.getElementById('unitCode').value,
-                "network-time": document.getElementById('networkTime').checked,
-                "clock-mode": document.getElementById('clock-mode').checked
+                "clock-mode": document.getElementById('clock-mode').checked,
+                "time-format": "YYYY-MM-DD HH:mm:ss",
             };
             ipcRenderer.send('config-saved', newConfig);
         }
@@ -100,7 +101,6 @@
             statusElement.textContent = '检测中...';
             const isOnline = await ipcRenderer.invoke('get-network-status');
             statusElement.textContent = isOnline ? '已连接到互联网' : '无法访问 Internet';
-            document.getElementById('networkTime').disabled = !isOnline;
         }
 
         async function checkAPIStatus() {
@@ -109,7 +109,7 @@
             statusElement.textContent = '正在检查...';
             const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://api.zyghit.cn');
             statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常 | 200 OK' : '无法访问API';
-            document.getElementById('networkTime').disabled = !isAPIAccessible;
+
         }
         updateNetworkStatus();
         checkAPIStatus();

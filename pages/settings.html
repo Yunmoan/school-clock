@@ -49,9 +49,9 @@
         </div>
         <div class="mdui-textfield">
 
-            是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)<br/>
+            是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(尚不可用)<br/>
             <label class="mdui-switch">
-                <input id="networkTime" type="checkbox"/>
+                <input id="networkTime" type="checkbox" disabled/>
                 <i class="mdui-switch-icon"></i>
             </label>
 
@@ -66,6 +66,34 @@
                     <i class="mdui-switch-icon"></i>
                 </label>
             </div>
+            <div class="mdui-textfield">
+                <label class="mdui-textfield-label">时间格式</label>
+                <input id="timeFormat" type="text" class="mdui-textfield-input" placeholder="YYYY-MM-DD HH:mm:ss"  />
+                <div class="mdui-textfield-helper">请勿随意修改，可参考 https://www.ibm.com/docs/zh/cmofi/7.5.0?topic=reference-date-time-formats</div>
+            </div>
+            <div class="mdui-textfield">
+                启用动态背景：(尚不支持)<br/>
+                <label class="mdui-switch">
+                    <input id="background-mode" type="checkbox" disabled/>
+                    <i class="mdui-switch-icon"></i>
+                </label>
+            </div>
+            <div class="mdui-card">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    上传 MP4 视频演示文件
+                    <input type="file" class="mdui-textfield-input" id="videoUpload" accept=".mp4" />
+                </div>
+
+                <!-- 卡片的按钮 -->
+                <div class="mdui-card-actions">
+                    <button class="mdui-btn mdui-ripple" onclick="uploadPPTX()">上传</button>
+                    <button class="mdui-btn mdui-ripple" onclick="openMp4Help()">怎么用？</button>
+                </div>
+
+            </div>
+
+
             <span>点按右上角的保存按钮来保存设定</span>
         </div>
 
@@ -138,6 +166,8 @@
     </div>
 </div>
 
+
+
 <script>
     const { ipcRenderer } = require('electron');
 
@@ -150,6 +180,7 @@
             document.getElementById('unitCode').value = config["unit-code"];
             document.getElementById('networkTime').checked = config["network-time"];
             document.getElementById('clock-mode').checked = config["clock-mode"];
+            document.getElementById('timeFormat').value = config['time-format'];
         });
     };
 
@@ -181,17 +212,40 @@
     // 保存配置函数
     function saveConfig() {
         const newConfig = {
+            "user-name": document.getElementById('userName').value,
             "app-name": document.getElementById('appName').value,
             "license-code": document.getElementById('licenseCode').value,
             "unit-code": document.getElementById('unitCode').value,
-            "network-time": document.getElementById('networkTime').checked,
-            "clock-mode": document.getElementById('clock-mode').checked
+            "network-time": false,
+            "clock-mode": document.getElementById('clock-mode').checked,
+            "time-format": document.getElementById('timeFormat').value,
         };
         ipcRenderer.send('config-saved-settings', newConfig);
     }
     document.getElementById('exitButton').addEventListener('click', () => {
         ipcRenderer.send('close-window',"settingsWindow");
     });
+
+    function openMp4Help(){
+
+    }
+
+    function uploadPPTX() {
+        const fileInput = document.getElementById('videoUpload');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('只能上传 .mp4 格式的视频');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const data = event.target.result;
+            ipcRenderer.send('upload-mp4', { data });
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
     var $ = mdui.$;
     function resetSettings(){
