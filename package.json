@@ -1,15 +1,19 @@
 {
-  "name": "clocker",
+  "name": "school-clock",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "keywords": [],
-  "author": "",
+  "author": "云默安",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "electron": "^32.0.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.2.1"
   }
 }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master 主窗体</title>
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
+    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+</head>
+<body>
+<h1>欢迎使用校园时钟工具</h1>
+<button id="settings-button">Open Settings</button>
+<button onclick="ipcRenderer.send('open-window','init.html', 'initsWindow', { width: 600, height: 800 });">Open init</button>
+
+<script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('settings-button').addEventListener('click', () => {
+        ipcRenderer.send('open-settings');
+    });
+</script>
+</body>
+</html>
