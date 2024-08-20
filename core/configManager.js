@@ -54,6 +54,31 @@ function readConfig() {
     }
 }
 
+function deleteFolder(filePath) {
+    const files = []
+    if (fs.existsSync(filePath)) {
+        const files = fs.readdirSync(filePath)
+        files.forEach((file) => {
+            const nextFilePath = `${filePath}/${file}`
+            const states = fs.statSync(nextFilePath)
+            if (states.isDirectory()) {
+                //recurse
+                deleteFolder(nextFilePath)
+            } else {
+                //delete file
+                fs.unlinkSync(nextFilePath)
+            }
+        })
+        fs.rmdirSync(filePath)
+    }
+    console.log("remove files :"+ filePath)
+}
+
+
+function resetConfig() {
+    deleteFolder('data')
+}
+
 function writeConfig(data) {
     try {
         fs.writeFileSync(configFilePath, JSON.stringify(data, null, 2), 'utf-8');
@@ -67,5 +92,6 @@ module.exports = {
     checkConfigFile,
     createConfigFile,
     readConfig,
-    writeConfig
+    writeConfig,
+    resetConfig
 };

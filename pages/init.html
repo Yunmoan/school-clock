@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>初始化配置 - 系统初始化</title>
-    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css"/>
-    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <link rel="stylesheet" href="assets/css/mdui.min.css"/>
+    <script src="assets/js/mdui.min.js"></script>
 </head>
 <body>
 <div class="mdui-container">
 <h2>系统初始化</h2>
     <h5>配置文件不存在，请开始初始化配置</h5>
+
+
+    <ul class="mdui-list" >
+        <li id="networkStatus"  class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
+        <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
+    </ul>
         <form id="configForm">
             <div class="mdui-textfield">
                 <input id="appName" type="text" class="mdui-textfield-input" placeholder="应用名称" />
                 <div class="mdui-textfield-helper">比如：XX中学走廊时钟</div>
+            </div>
+            <div class="mdui-textfield">
+                <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名" />
             </div>
             <div class="mdui-textfield">
                 <input id="licenseCode" type="text" class="mdui-textfield-input" placeholder="许可证编码" />
@@ -46,7 +55,6 @@
                         <i class="mdui-switch-icon"></i>
                     </label>
                 </div>
-                <span>点按右上角的保存按钮来保存设定</span>
             </div>
 
             <button class="mdui-btn mdui-btn-raised" type="submit">保存配置</button>
@@ -78,6 +86,7 @@
         function saveConfig() {
             const newConfig = {
                 "app-name": document.getElementById('appName').value,
+                "user-name": document.getElementById('userName').value,
                 "license-code": document.getElementById('licenseCode').value,
                 "unit-code": document.getElementById('unitCode').value,
                 "network-time": document.getElementById('networkTime').checked,
@@ -85,6 +94,25 @@
             };
             ipcRenderer.send('config-saved', newConfig);
         }
+
+        async function updateNetworkStatus() {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = '检测中...';
+            const isOnline = await ipcRenderer.invoke('get-network-status');
+            statusElement.textContent = isOnline ? '已连接到互联网' : '无法访问 Internet';
+            document.getElementById('networkTime').disabled = !isOnline;
+        }
+
+        async function checkAPIStatus() {
+
+            const statusElement = document.getElementById('apiStatus');
+            statusElement.textContent = '正在检查...';
+            const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://api.zyghit.cn');
+            statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常 | 200 OK' : '无法访问API';
+            document.getElementById('networkTime').disabled = !isAPIAccessible;
+        }
+        updateNetworkStatus();
+        checkAPIStatus();
     </script>
 </body>
 </html>

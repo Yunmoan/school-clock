@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <title>系统设置</title>
-    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css"/>
-    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <link rel="stylesheet" href="assets/css/mdui.min.css"/>
+    <script src="assets/js/mdui.min.js"></script>
 </head>
-<body class="mdui-appbar-with-toolbar mdui-appbar-with-tab">
+<body class="mdui-appbar-with-toolbar mdui-appbar-with-tab mdui-theme-layout-auto">
 <div class="mdui-appbar mdui-appbar-fixed" >
     <div class="mdui-toolbar mdui-color-indigo" >
         <a href="javascript:;" class="mdui-typo-title">系统设置</a>
@@ -24,6 +24,11 @@
 
     <form id="configForm">
         <div id="tab1">
+            <div class="mdui-textfield">
+                <label class="mdui-textfield-label">用户名</label>
+                <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名" disabled/>
+
+            </div>
         <div class="mdui-textfield">
             <input id="appName" type="text" class="mdui-textfield-input" placeholder="应用名称" />
             <div class="mdui-textfield-helper">比如：XX中学走廊时钟</div>
@@ -66,6 +71,8 @@
 
     </form>
     <div id="tab3" style="margin-top: 16px">
+
+
         <div class="mdui-card">
             <!-- 卡片的内容 -->
             <div class="mdui-card-content">
@@ -80,9 +87,24 @@
 
             <!-- 卡片的按钮 -->
             <div class="mdui-card-actions">
-                <button class="mdui-btn mdui-ripple">检查更新</button>
+                <button class="mdui-btn mdui-ripple" onclick="mdui.snackbar('懒得做,还没实现,请手动更新')">检查更新</button>
+                <button class="mdui-btn mdui-ripple" onclick="resetSettings()" style="color:red">删除全部配置文件并重置应用</button>
             </div>
 
+        </div>
+        <div class="mdui-card" style="margin-top: 8px">
+            <!-- 卡片的内容 -->
+            <div class="mdui-card-content">
+                Network
+                <ul class="mdui-list" >
+                    <li id="networkStatus"  class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
+                    <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
+                </ul>
+            </div>
+            <!-- 卡片的按钮 -->
+            <div class="mdui-card-actions">
+                <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();">重新检测</button>
+            </div>
         </div>
         <div class="mdui-card"  style="margin-top: 8px">
             <!-- 卡片的内容 -->
@@ -122,6 +144,7 @@
     // 页面加载时从主进程获取配置并填充表单
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
+            document.getElementById('userName').value = config["user-name"];
             document.getElementById('appName').value = config["app-name"];
             document.getElementById('licenseCode').value = config["license-code"];
             document.getElementById('unitCode').value = config["unit-code"];
@@ -170,6 +193,60 @@
         ipcRenderer.send('close-window',"settingsWindow");
     });
 
+    var $ = mdui.$;
+    function resetSettings(){
+
+        mdui.dialog({
+            title: '警告',
+            content: '继续执行将彻底删除所有配置文件，确定吗？',
+            buttons: [
+                {
+                    text: '取消'
+                },
+                {
+                    text: '确认',
+                    onClick: function () {
+                        mdui.dialog({
+                            title: '最后一次警告',
+                            content: '继续执行将彻底删除所有配置文件并结束程序，确定吗？下方按钮反置，请注意留意。',
+                            buttons: [
+                                {
+                                    text: '确定',
+                                    onClick: function () {
+                                        ipcRenderer.send('reset-settings');
+                                    }
+                                },
+                                {
+                                    text: '取消',
+
+                                }
+                            ]
+                        });
+                    }
+                }
+            ]
+        });
+
+    }
+
+    async function updateNetworkStatus() {
+        const statusElement = document.getElementById('networkStatus');
+        statusElement.textContent = '检测中...';
+        const isOnline = await ipcRenderer.invoke('get-network-status');
+        statusElement.textContent = isOnline ? '已连接到互联网' : '无法访问 Internet';
+    }
+
+    async function checkAPIStatus() {
+
+        const statusElement = document.getElementById('apiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://api.zyghit.cn');
+        statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常 | 200 OK' : '无法访问API';
+    }
+
+    // Initial checks
+    updateNetworkStatus();
+    checkAPIStatus();
     displaySystemInfo();
 </script>
 </body>

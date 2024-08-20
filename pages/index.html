@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master 主窗体</title>
-    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
-    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <link rel="stylesheet" href="assets/css/mdui.min.css">
+    <script src="assets/js/mdui.min.js"></script>
 </head>
-<body>
+<body class="mdui-appbar-with-toolbar mdui-appbar-with-tab mdui-theme-layout-auto">
+<div class="mdui-appbar mdui-appbar-fixed" >
+    <div class="mdui-toolbar mdui-color-indigo" >
+        <a href="javascript:;" class="mdui-typo-title">主页 - 校园时钟工具</a>
+        <div class="mdui-toolbar-spacer"></div>
+        <a href="javascript:ipcRenderer.send('kill-all');" class="mdui-btn mdui-btn-icon" mdui-tooltip="{content: '退出'}"><i class="mdui-icon material-icons">exit_to_app</i></a>
+    </div>
+</div>
+<div class="mdui-container">
 <h1>欢迎使用校园时钟工具</h1>
 <button id="settings-button">Open Settings</button>
 <button onclick="ipcRenderer.send('open-window','init.html', 'initsWindow', { width: 600, height: 800 });">Open init</button>
-
+</div>
 <script>
     const { ipcRenderer } = require('electron');
 

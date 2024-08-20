@@ -3,7 +3,7 @@ const { app, ipcMain,shell } = require('electron');
 const configManager = require('./core/configManager');
 const { createWindow, closeWindow } = require('./core/windowManager');
 const { getSystemInfo } = require('./core/systemInfo');
-const { checkNetworkStatus } = require('./core/networkStatus');
+const { checkNetworkStatus,checkURLStatus  } = require('./core/networkStatus');
 
 
 
@@ -27,10 +27,18 @@ app.on('ready', () => {
         return getSystemInfo();
     });
 
-    ipcMain.handle('get-network-status', (event) => {
+    ipcMain.handle('get-network-status', async () => {
         return new Promise((resolve) => {
             checkNetworkStatus((isOnline) => {
                 resolve(isOnline);
+            });
+        });
+    });
+
+    ipcMain.handle('check-url-status', async (event, url) => {
+        return new Promise((resolve) => {
+            checkURLStatus(url, (isAccessible) => {
+                resolve(isAccessible);
             });
         });
     });
@@ -53,6 +61,16 @@ app.on('ready', () => {
         closeWindow('initsWindow');
         createMainWindow();
     });
+
+    ipcMain.on('kill-all', (event, newConfig) => {
+        app.quit();
+    });
+
+    ipcMain.on("reset-settings" ,() => {
+        configManager.resetConfig();
+        app.quit();
+
+    })
 
     function createMainWindow() {
         createWindow('index.html', 'mainWindow', { width: 900, height: 600 });
