@@ -16,7 +16,6 @@
   "dependencies": {
     "electron-updater": "^6.2.1",
     "install": "^0.13.0",
-    "npm": "^10.8.2",
-    "pptx-parser": "^1.1.7-beta.9"
+    "npm": "^10.8.2"
   }
 }
