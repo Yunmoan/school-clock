@@ -231,7 +231,12 @@
                 const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
                 document.getElementById('textbox-2').style.display = 'none';
             } else {
-                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
+                if(config['countdowntext']){
+                    document.getElementById('textbox-2-content').innerText = config['countdowntext'];
+                } else {
+                    document.getElementById('textbox-2').style.display = 'none';
+                }
+
                 document.getElementById('countdown-container').style.display = 'none';
             }
 
@@ -239,7 +244,11 @@
                 const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
                 document.getElementById('textbox-1').style.display = 'none';
             } else {
-                document.getElementById('textbox-1-content').innerText = config['text-1'];
+                if(config['text-1']){
+                    document.getElementById('textbox-1-content').innerText = config['text-1'];
+                } else {
+                    document.getElementById('textbox-1').style.display = 'none';
+                }
                 document.getElementById('gaokao-countdown-container').style.display = 'none';
             }
 
