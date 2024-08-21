@@ -454,7 +454,7 @@
         reader.onload = function (event) {
             const arrayBuffer = event.target.result;
             const data = new Uint8Array(arrayBuffer);
-            mdui.snackbar('开始上传并转换，再次上传将替换视频')
+            mdui.snackbar('开始上传，再次上传将替换视频（请稍等片刻，文件越大上传越慢）')
             ipcRenderer.send('upload-mp4', {data});
         };
         reader.readAsArrayBuffer(file);
