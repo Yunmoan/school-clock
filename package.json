@@ -1,17 +1,44 @@
 {
   "name": "school-clock",
   "version": "1.0.0",
+  "description": "一个用于走廊或者什么别的公共展示用的工具",
   "main": "main.js",
+
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.zgit.schoolclock",
+    "productName": "校园时钟工具",
+    "copyright": "Copyright © 2024 云默安 & ZGIT",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "core/clock.ico"
+    },
+    "files": [
+
+      "core/**/*",
+      "data/**/*",
+      "pages/**/*",
+      "node_modules/**/*",
+      "main.js",
+      "package.json",
+      "LICENSE"
+    ]
   },
   "keywords": [],
   "author": "云默安",
   "license": "GPL3.0",
-  "description": "",
-  "dependencies": {
+  "devDependencies": {
     "electron": "^22.3.27",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
     "electron-updater": "^6.2.1",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.3",
