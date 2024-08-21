@@ -92,6 +92,14 @@
                 "unit-code": document.getElementById('unitCode').value,
                 "clock-mode": document.getElementById('clock-mode').checked,
                 "time-format": "YYYY-MM-DD HH:mm:ss",
+                "hitokoto":true,
+                "marquee-bottom": "请到系统设置-页面配置修改本内容",
+                "marquee-top": "请到系统设置-页面配置修改本内容-这是顶部滚动示例消息",
+                "marquee-top-speed": 1,
+                "marquee-bottom-speed": 2,
+                "UseCountdown":false,
+                "countdown-date":"",
+                "countdown-intro":""
             };
             ipcRenderer.send('config-saved', newConfig);
         }

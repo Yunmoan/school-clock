@@ -63,6 +63,14 @@ app.on('ready', () => {
         });
     });
 
+    ipcMain.on('upload-background', (event, { data, fileName ,newConfig}) => {
+        const savePath = path.join('data', fileName);
+        fs.writeFileSync(savePath, Buffer.from(data));
+        event.reply('background-uploaded', savePath);
+        configManager.writeConfig(newConfig);
+    });
+
+
     ipcMain.handle('get-system-info', () => {
         return getSystemInfo();
     });
@@ -88,6 +96,8 @@ app.on('ready', () => {
         closeWindow('settingsWindow');
     });
 
+
+
     ipcMain.on('close-window', (event, window_name) => {
         closeWindow(window_name);
     });
@@ -100,6 +110,16 @@ app.on('ready', () => {
         configManager.createConfigFile(newConfig);
         closeWindow('initsWindow');
         createMainWindow();
+    });
+
+    ipcMain.on('clear-background', (event) => {
+        // 处理清除背景图片的逻辑
+        const backgroundPath = path.join('data');
+        // 可选：删除背景图片文件（如果需要删除）
+        fs.unlinkSync(path.join(backgroundPath, global_config['background-image']));
+
+        // 清除配置中的背景图片路径
+        event.reply('background-cleared');
     });
 
     ipcMain.on('kill-all', () => {

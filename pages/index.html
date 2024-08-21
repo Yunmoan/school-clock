@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="assets/css/mdui.min.css">
     <script src="assets/js/mdui.min.js"></script>
 </head>
-<body class="mdui-appbar-with-toolbar mdui-appbar-with-tab mdui-theme-layout-auto">
+<body class="mdui-appbar-with-toolbar mdui-appbar-with-tab mdui-theme-layout-auto mdui-theme-accent-pink">
 <div class="mdui-appbar mdui-appbar-fixed">
     <div class="mdui-toolbar mdui-color-indigo">
         <a href="javascript:;" class="mdui-typo-title">主页 - 校园时钟工具</a>
+        <span id="hikotoko"></span>
         <div class="mdui-toolbar-spacer"></div>
         <a href="javascript:ipcRenderer.send('kill-all');" class="mdui-btn mdui-btn-icon"
            mdui-tooltip="{content: '退出'}"><i class="mdui-icon material-icons">exit_to_app</i></a>
@@ -28,6 +29,40 @@
 
                 </div>
             </div>
+            <div class="mdui-card" id="gaokao-countdown-container" style="margin-top: 8px">
+                <div class="mdui-card-media">
+                    <img src="assets/gaokaojiayou.jpg" height="150" width="auto"/>
+                    <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
+                        <div class="mdui-card-primary">
+                            <div id="gaokao-countdown"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mdui-card" id="countdown-container" style="margin-top: 8px">
+                <div style="text-align: center;margin: 8px 0 8px 0;">
+                    <h2>距离 <span id="countdown-intro" style="font-size: 25px"></span> 还有</h2>
+                    <h1 id="countdown"></h1>
+                </div>
+            </div>
+
+            <div class="mdui-card" style="margin-top: 8px">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    网络状态
+                    <ul class="mdui-list">
+                        <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
+                        <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
+                        <li id="HikotokoapiStatus" class="mdui-list-item mdui-ripple">...</li>
+                    </ul>
+                </div>
+                <!-- 卡片的按钮 -->
+                <div class="mdui-card-actions">
+                    <button class="mdui-btn mdui-ripple" onclick="checkHitokotAPIStatus();updateNetworkStatus();checkAPIStatus();">重新检测</button>
+                </div>
+            </div><br/>
+
+
         </div>
         <div class="mdui-col-xs-6 mdui-col-sm-4">
             <div class="mdui-card">
@@ -42,11 +77,11 @@
                             class="mdui-icon material-icons">settings</i> 打开设置
                     </button>
 
-                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple"
+                    <button class="mdui-btn mdui-btn-block mdui-ripple"
                             onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
                     </button>
                     <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple"
-                            onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });">
+                            onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')">
                         <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
                     </button>
                 </div>
@@ -58,16 +93,182 @@
 <script>
     const {ipcRenderer} = require('electron');
 
+    // 倒计时类
+    class Countdown {
+        constructor(elementId, targetDate, introText) {
+            this.container = document.getElementById(elementId);
+
+            // 检查容器元素是否存在
+            if (!this.container) {
+                console.error(`Element with id "${elementId}" not found.`);
+                return;
+            }
+
+            this.targetDate = targetDate;
+            this.introText = introText;
+
+            // 检查容器内的元素是否存在
+            this.introElement = this.container.querySelector('#countdown-intro');
+            this.timeElement = this.container.querySelector('#countdown');
+
+            if (!this.introElement || !this.timeElement) {
+                console.error(`Countdown intro or time element not found within "${elementId}".`);
+                return;
+            }
+
+            this.startCountdown();
+        }
+
+        startCountdown() {
+            // 显示倒计时介绍文本
+            this.introElement.textContent = this.introText;
+
+            const updateCountdown = () => {
+                const now = new Date();
+                const distance = this.targetDate - now;
+
+                if (distance <= 0) {
+                    this.container.style.display = 'none';
+                    clearInterval(this.interval);
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    this.timeElement.textContent =
+                        `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+                }
+            };
+
+            updateCountdown();  // 初次更新
+            this.interval = setInterval(updateCountdown, 1000);  // 每秒更新一次
+        }
+    }
+
+    //高考模式：高考倒计时
+    class GaokaoCountdown {
+        constructor(elementId) {
+            this.container = document.getElementById(elementId);
+            this.initializeCountdown();
+        }
+
+        initializeCountdown() {
+            const now = new Date();
+            let gaokaoyear;
+            let targetDate = new Date(`${now.getFullYear()}-06-07T09:00:00`);
+            gaokaoyear = now.getFullYear()
+            let endDate = new Date(`${now.getFullYear()}-06-09T18:00:00`);
+
+            if (now > endDate) {
+                targetDate = new Date(`${now.getFullYear() + 1}-06-07T09:00:00`);
+                gaokaoyear = now.getFullYear() + 1;
+                endDate = new Date(`${now.getFullYear() + 1}-06-09T18:00:00`);
+            }
+
+            this.updateCountdown(targetDate, endDate, gaokaoyear);
+            this.startCountdown(targetDate, endDate, gaokaoyear);
+        }
+
+        updateCountdown(targetDate, endDate,gaokaoyear) {
+            const now = new Date();
+            const timeDiff = targetDate - now;
+
+            if (timeDiff > 0) {
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+                this.container.innerHTML = `
+                <h1 style="color: #ffffff">距离 <span style="font-size: 40px">${gaokaoyear}高考</span> 还有 <br/><span style="color: rgb(246,188,113);font-size: 38px"> ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒</span></h1>
+            `;
+            } else if (now >= targetDate && now <= endDate) {
+                this.container.innerHTML = `<h1>同学们，高考加油！</h1>`;
+            } else {
+                this.container.innerHTML = "";
+            }
+        }
+
+        startCountdown(targetDate, endDate,gaokaoyear) {
+            setInterval(() => {
+                this.updateCountdown(targetDate, endDate,gaokaoyear);
+            }, 1000);
+        }
+    }
+
     // 页面加载时从主进程获取配置并填充表单
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
-            document.getElementById('username').value = config["user-name"];
+
+            timeFormat = config['time-format'];
+
+            if (config['UseCountdown']) {
+                // 初始化倒计时组件
+                const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
+                const countdownIntro = config['countdown-intro'];
+                const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
+            } else {
+                document.getElementById('countdown-container').style.display = 'none';
+            }
+
+            if (config['clock-mode']) {
+                const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
+            } else {
+                document.getElementById('gaokao-countdown-container').style.display = 'none';
+            }
+
+            if (config['hitokoto']) {
+                setInterval(async () => {
+                    const data = await fetchHitokoto();
+                    if (data) {
+                        document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
+                    }
+                }, 300000); // 300000 毫秒 = 5 分钟
+                fetchHitokoto();
+                if (data) {
+                    document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
+                }
+            } else {
+                document.getElementById('hikotoko').style.display = 'none';
+            }
+
+            document.getElementById('username').innerText = config["user-name"];
+
         });
     };
 
     document.getElementById('settings-button').addEventListener('click', () => {
         ipcRenderer.send('open-settings');
     });
+
+    async function updateNetworkStatus() {
+        const statusElement = document.getElementById('networkStatus');
+        statusElement.textContent = '检测中...';
+        const isOnline = await ipcRenderer.invoke('get-network-status');
+        statusElement.textContent = isOnline ? '已连接到互联网' : '无法访问 Internet';
+    }
+
+    async function checkAPIStatus() {
+
+        const statusElement = document.getElementById('apiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://api.zyghit.cn');
+        statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常' : '无法访问API';
+    }
+
+    async function checkHitokotAPIStatus() {
+
+        const statusElement = document.getElementById('HikotokoapiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
+        statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';
+    }
+
+    // Initial checks
+    checkHitokotAPIStatus();
+    updateNetworkStatus();
+    checkAPIStatus();
 </script>
 </body>
 </html>
