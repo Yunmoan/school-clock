@@ -20,10 +20,16 @@
       "target": "nsis",
       "icon": "core/clock.ico"
     },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
     "files": [
-
       "core/**/*",
-      "data/**/*",
       "pages/**/*",
       "node_modules/**/*",
       "main.js",

@@ -214,6 +214,9 @@
                 <button class="mdui-btn mdui-ripple" onclick="mdui.snackbar('还没实现,后续版本实现,请手动更新')">
                     检查更新
                 </button>
+                <button class="mdui-btn mdui-ripple" onclick="ipcRenderer.send('open-config-folder')">
+                    打开配置文件目录
+                </button>
                 <button class="mdui-btn mdui-ripple" onclick="resetSettings()" style="color:red">
                     删除全部配置文件并重置应用
                 </button>

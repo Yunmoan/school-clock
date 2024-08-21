@@ -85,7 +85,7 @@
         <div class="mdui-col-xs-8 mdui-col-sm-8">
             <div class="mdui-card">
                 <video id="videoPlayer" autoplay loop width="100%" height="100%">
-                    <source src="../data/play.mp4" type="video/mp4">
+                    <source src="" type="video/mp4">
                     播放异常，请联系管理员
                 </video>
             </div>
@@ -247,12 +247,23 @@
     }
 
     window.onload = () => {
+
+
+
         ipcRenderer.invoke('get-config').then((config) => {
             timeFormat = config['time-format'];
             const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
             const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
 
             document.getElementById('company').innerText = config['unit-code'];
+            ipcRenderer.invoke('get-config-directory').then((path) => {
+                document.getElementById('videoPlayer').src = path + '/play.mp4';
+                if (config['background-image']) {
+                    document.body.style.background = "url(" + path +"/"+ config['background-image'] + ") no-repeat";//通过js控制改变行内样式
+                    document.body.style.backgroundSize = "cover";
+                }
+
+            });
 
             document.getElementById('videoPlayer').volume = config['video-volume'];
 
@@ -298,10 +309,7 @@
             } else {
                 document.getElementById('hitokoto').style.display = 'none';
             }
-            if (config['background-image']) {
-                document.body.style.background = "url(../data/" + config['background-image'] + ") no-repeat";//通过js控制改变行内样式
-                document.body.style.backgroundSize = "cover";
-            }
+
         });
     };
 

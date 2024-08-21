@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
-const configFilePath = path.join('data', 'config.json');
+// 使用 userData 目录来存放配置文件，确保兼容性和安全性
+const configFilePath = path.join(app.getPath('userData'), 'data', 'config.json');
 
 function ensureConfigDirectory() {
     const configDirPath = path.dirname(configFilePath);
@@ -28,10 +29,6 @@ function checkConfigFile() {
 function createConfigFile(defaultConfig = {}) {
     try {
         ensureConfigDirectory(); // 确保配置文件夹存在
-        const configDirPath = path.dirname(configFilePath);
-        if (!fs.existsSync(configDirPath)) {
-            fs.mkdirSync(configDirPath, { recursive: true });
-        }
         fs.writeFileSync(configFilePath, JSON.stringify(defaultConfig, null, 2), 'utf-8');
         console.log('Config file created:', configFilePath);
     } catch (error) {
@@ -55,32 +52,29 @@ function readConfig() {
 }
 
 function deleteFolder(filePath) {
-    const files = []
     if (fs.existsSync(filePath)) {
-        const files = fs.readdirSync(filePath)
-        files.forEach((file) => {
-            const nextFilePath = `${filePath}/${file}`
-            const states = fs.statSync(nextFilePath)
-            if (states.isDirectory()) {
-                //recurse
-                deleteFolder(nextFilePath)
+        fs.readdirSync(filePath).forEach((file) => {
+            const nextFilePath = path.join(filePath, file);
+            const stats = fs.statSync(nextFilePath);
+            if (stats.isDirectory()) {
+                deleteFolder(nextFilePath); // 递归删除子目录
             } else {
-                //delete file
-                fs.unlinkSync(nextFilePath)
+                fs.unlinkSync(nextFilePath); // 删除文件
             }
-        })
-        fs.rmdirSync(filePath)
+        });
+        fs.rmdirSync(filePath);
+        console.log("Removed folder and its contents: " + filePath);
     }
-    console.log("remove files :"+ filePath)
 }
 
-
 function resetConfig() {
-    deleteFolder('data')
+    const dataDir = path.join(app.getPath('userData'), 'data');
+    deleteFolder(dataDir);
 }
 
 function writeConfig(data) {
     try {
+        ensureConfigDirectory(); // 确保配置文件夹存在
         fs.writeFileSync(configFilePath, JSON.stringify(data, null, 2), 'utf-8');
         console.log('Config file updated:', configFilePath);
     } catch (error) {

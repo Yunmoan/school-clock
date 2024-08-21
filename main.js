@@ -7,25 +7,51 @@ const { convertWebmToMp4, deleteFile } = require('./core/videoConverter');
 const { getSystemInfo } = require('./core/systemInfo');
 const { checkNetworkStatus, checkURLStatus } = require('./core/networkStatus');
 
-// 确保 'data' 目录存在
-const dataDir = path.join(__dirname, 'data');
+// 获取用户数据目录
+const userDataDir = app.getPath('userData');
+
+// 确保用户数据目录下的 'data' 目录存在
+const dataDir = path.join(userDataDir, 'data');
 if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
+    fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// app.disableHardwareAcceleration();
-// app.commandLine.appendSwitch('disable-gpu');
-
+// 其余代码不变
 app.on('ready', () => {
     global.global_config = configManager.readConfig();
+
+    // 配置文件路径
+    const configFilePath = path.join(app.getPath('userData'), 'data', 'config.json');
+
+    // 处理打开配置文件目录的请求
+    ipcMain.on('open-config-folder', (event) => {
+        const configDir = path.dirname(configFilePath);
+        shell.openPath(configDir)
+            .then(() => {
+                console.log('Config folder opened:', configDir);
+            })
+            .catch((error) => {
+                console.error('Failed to open config folder:', error);
+            });
+    });
+
+    // 配置文件路径
+    const configDir = path.join(app.getPath('userData'), 'data');
+
+    // 提供配置文件目录路径给渲染进程
+    ipcMain.handle('get-config-directory', () => {
+        return configDir;
+    });
 
     ipcMain.on('open-url', (event, url) => {
         shell.openExternal(url);
     });
 
+
+
     ipcMain.on('upload-webm', (event, { data }) => {
-        const inputPath = path.join("data", 'input.webm');
-        const outputPath = path.join("data", 'play.mp4');
+        const inputPath = path.join(dataDir, 'input.webm');
+        const outputPath = path.join(dataDir, 'play.mp4');
 
         fs.writeFile(inputPath, Buffer.from(new Uint8Array(data)), (err) => {
             if (err) {
@@ -47,7 +73,7 @@ app.on('ready', () => {
     });
 
     ipcMain.on('upload-mp4', (event, { data }) => {
-        const savePath = path.join('data', 'play.mp4');
+        const savePath = path.join(dataDir, 'play.mp4');
         fs.writeFile(savePath, Buffer.from(new Uint8Array(data)), (err) => {
             if (err) {
                 console.error('Failed to save the file:', err);
@@ -67,16 +93,12 @@ app.on('ready', () => {
         return configManager.readConfig();
     });
 
-
-
-
-    ipcMain.on('upload-background', (event, { data, fileName ,newConfig}) => {
-        const savePath = path.join('data', fileName);
+    ipcMain.on('upload-background', (event, { data, fileName, newConfig }) => {
+        const savePath = path.join(dataDir, fileName);
         fs.writeFileSync(savePath, Buffer.from(data));
         event.reply('background-uploaded', savePath);
         configManager.writeConfig(newConfig);
     });
-
 
     ipcMain.handle('get-system-info', () => {
         return getSystemInfo();
@@ -103,8 +125,6 @@ app.on('ready', () => {
         closeWindow('settingsWindow');
     });
 
-
-
     ipcMain.on('close-window', (event, window_name) => {
         closeWindow(window_name);
     });
@@ -121,11 +141,10 @@ app.on('ready', () => {
 
     ipcMain.on('clear-background', (event) => {
         // 处理清除背景图片的逻辑
-        const backgroundPath = path.join('data');
-        // 可选：删除背景图片文件（如果需要删除）
-        fs.unlinkSync(path.join(backgroundPath, global_config['background-image']));
-
-        // 清除配置中的背景图片路径
+        const backgroundPath = path.join(dataDir, global.global_config['background-image']);
+        if (fs.existsSync(backgroundPath)) {
+            fs.unlinkSync(backgroundPath);
+        }
         event.reply('background-cleared');
     });
 
@@ -133,7 +152,7 @@ app.on('ready', () => {
         app.quit();
     });
 
-    ipcMain.on("reset-settings", () => {
+    ipcMain.on('reset-settings', () => {
         configManager.resetConfig();
         app.quit();
     });
