@@ -8,21 +8,62 @@
     <script src="assets/js/mdui.min.js"></script>
 </head>
 <body class="mdui-appbar-with-toolbar mdui-appbar-with-tab mdui-theme-layout-auto">
-<div class="mdui-appbar mdui-appbar-fixed" >
-    <div class="mdui-toolbar mdui-color-indigo" >
+<div class="mdui-appbar mdui-appbar-fixed">
+    <div class="mdui-toolbar mdui-color-indigo">
         <a href="javascript:;" class="mdui-typo-title">主页 - 校园时钟工具</a>
         <div class="mdui-toolbar-spacer"></div>
-        <a href="javascript:ipcRenderer.send('kill-all');" class="mdui-btn mdui-btn-icon" mdui-tooltip="{content: '退出'}"><i class="mdui-icon material-icons">exit_to_app</i></a>
+        <a href="javascript:ipcRenderer.send('kill-all');" class="mdui-btn mdui-btn-icon"
+           mdui-tooltip="{content: '退出'}"><i class="mdui-icon material-icons">exit_to_app</i></a>
     </div>
 </div>
 <div class="mdui-container">
-<h1>欢迎使用校园时钟工具</h1>
-<button id="settings-button">Open Settings</button>
-<button onclick="ipcRenderer.send('open-window','init.html', 'initsWindow', { width: 600, height: 800 });">Open init</button>
-<button onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });">Open Timer</button>
+    <h1>欢迎使用校园时钟工具</h1>
+    <!-- 在超小屏幕设备上，第一列 100% 宽度，第二列 50% 宽度。在小屏幕及以上设备上，第一列为 66.6% 宽度，第二列为 33.3% 宽度。 -->
+    <div class="mdui-row">
+        <div class="mdui-col-xs-12 mdui-col-sm-8">
+            <div class="mdui-card">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    欢迎回来 <span id="username"></span>，请通过右侧选项设置本工具
+
+                </div>
+            </div>
+        </div>
+        <div class="mdui-col-xs-6 mdui-col-sm-4">
+            <div class="mdui-card">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    选项
+                </div>
+
+                <!-- 卡片的按钮 -->
+                <div class="mdui-card-actions">
+                    <button class="mdui-btn mdui-btn-block mdui-ripple" id="settings-button"><i
+                            class="mdui-icon material-icons">settings</i> 打开设置
+                    </button>
+
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple"
+                            onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
+                    </button>
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple"
+                            onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });">
+                        <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 <script>
-    const { ipcRenderer } = require('electron');
+    const {ipcRenderer} = require('electron');
+
+    // 页面加载时从主进程获取配置并填充表单
+    window.onload = () => {
+        ipcRenderer.invoke('get-config').then((config) => {
+            document.getElementById('username').value = config["user-name"];
+        });
+    };
 
     document.getElementById('settings-button').addEventListener('click', () => {
         ipcRenderer.send('open-settings');

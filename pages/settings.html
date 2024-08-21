@@ -26,7 +26,7 @@
         <div id="tab1">
             <div class="mdui-textfield">
                 <label class="mdui-textfield-label">用户名</label>
-                <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名" disabled/>
+                <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名"/>
 
             </div>
         <div class="mdui-textfield">
@@ -79,22 +79,36 @@
                 </label>
             </div>
             <div class="mdui-card">
+                <div class="mdui-tab" mdui-tab>
+                    <a href="#up-tab1" class="mdui-ripple mdui-ripple-white">MP4格式</a>
+                    <a href="#up-tab2" class="mdui-ripple mdui-ripple-white">WEBM格式</a>
+                </div>
                 <!-- 卡片的内容 -->
                 <div class="mdui-card-content">
-                    上传 MP4 视频演示文件
-                    <input type="file" class="mdui-textfield-input" id="videoUpload" accept=".mp4" />
+                    上传视频演示文件
+                    <div id="up-tab1">
+                        <input type="file" class="mdui-textfield-input" id="videoUploadMP4" accept=".mp4" />
+                        <div class="mdui-card-actions">
+                            <button class="mdui-btn mdui-ripple" onclick="uploadMP4()">上传MP4</button>
+                            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}" style="color:darkred">怎么用？</button>
+                        </div>
+                    </div>
+                    <div id="up-tab2">
+                        <input type="file" class="mdui-textfield-input" id="videoUploadWEBM" accept=".webm" />
+
+                        <div class="mdui-card-actions">
+                            <button class="mdui-btn mdui-ripple" onclick="uploadWEBM()">上传WEBM</button>
+                            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}" style="color:darkred">怎么用？</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 卡片的按钮 -->
-                <div class="mdui-card-actions">
-                    <button class="mdui-btn mdui-ripple" onclick="uploadPPTX()">上传</button>
-                    <button class="mdui-btn mdui-ripple" onclick="openMp4Help()">怎么用？</button>
-                </div>
+
 
             </div>
 
 
-            <span>点按右上角的保存按钮来保存设定</span>
+            <br/><span>点按右上角的保存按钮来保存设定</span>
         </div>
 
     </form>
@@ -115,7 +129,7 @@
 
             <!-- 卡片的按钮 -->
             <div class="mdui-card-actions">
-                <button class="mdui-btn mdui-ripple" onclick="mdui.snackbar('懒得做,还没实现,请手动更新')">检查更新</button>
+                <button class="mdui-btn mdui-ripple" onclick="mdui.snackbar('还没实现,后续版本实现,请手动更新')">检查更新</button>
                 <button class="mdui-btn mdui-ripple" onclick="resetSettings()" style="color:red">删除全部配置文件并重置应用</button>
             </div>
 
@@ -166,7 +180,22 @@
     </div>
 </div>
 
-
+<div class="mdui-dialog" id="example-1">
+    <div class="mdui-dialog-content">
+        <div class="mdui-dialog-title">PPT转视频指南</div>
+        当然，您也可以直接上传 MP4 文件或者在下方卡片上传 webm 文件。<br/>
+        Microsoft PowerPoint 指南：<br/>
+        <img src="assets/ppthelp.png" width="450" height="auto"/>
+        <br/>
+        Kingsoft WPS Office 指南：<br/>
+        * 注意：WPS 导出的视频大概率是 webm 格式，需要上传到 WEBM 上传卡片，将会自动转换为MP4并保存在 /data/play.mp4<br/>
+        最佳建议是在转换后再上传以便节约性能，可使用此工具: https://cdkm.com/cn/webm-to-mp4 <br/>
+        <img src="assets/wpshelp.png" width="450" height="auto"/>
+    </div>
+    <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close>好的</button>
+    </div>
+</div>
 
 <script>
     const { ipcRenderer } = require('electron');
@@ -189,12 +218,6 @@
         saveConfig();
     });
 
-    // 表单提交事件
-    document.getElementById('configForm').addEventListener('submit', (event) => {
-        event.preventDefault();
-        saveConfig();
-    });
-
     async function displaySystemInfo() {
         const systemInfo = await ipcRenderer.invoke('get-system-info');
         const infoList = document.getElementById('systemInfoList');
@@ -207,7 +230,6 @@
                 <li class="mdui-list-item mdui-ripple">已使用/空闲: ${(systemInfo.usedMemory / 1024 / 1024).toFixed(2)} MB / ${(systemInfo.freeMemory / 1024 / 1024).toFixed(2)} MB</li>
             `;
     }
-
 
     // 保存配置函数
     function saveConfig() {
@@ -226,23 +248,64 @@
         ipcRenderer.send('close-window',"settingsWindow");
     });
 
-    function openMp4Help(){
-
-    }
-
-    function uploadPPTX() {
-        const fileInput = document.getElementById('videoUpload');
+    function uploadMP4() {
+        const fileInput = document.getElementById('videoUploadMP4');
         const file = fileInput.files[0];
 
         if (!file) {
-            alert('只能上传 .mp4 格式的视频');
+            alert('请选择一个 MP4 文件');
+            return;
+        }
+
+        if (!['video/mp4', 'video/x-m4v'].includes(file.type)) {
+            alert('只能上传 MP4 格式的视频');
+            return;
+        }
+
+        const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+        if (file.size > MAX_FILE_SIZE) {
+            alert('文件过大，请选择小于 100MB 的文件');
             return;
         }
 
         const reader = new FileReader();
         reader.onload = function(event) {
-            const data = event.target.result;
+            const arrayBuffer = event.target.result;
+            // Convert ArrayBuffer to Uint8Array
+            const data = new Uint8Array(arrayBuffer);
             ipcRenderer.send('upload-mp4', { data });
+            mdui.snackbar('上传完成，再次上传将替换视频')
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function uploadWEBM() {
+        const fileInput = document.getElementById('videoUploadWEBM');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('请选择一个 WEBM 文件');
+            return;
+        }
+
+        if (file.type !== 'video/webm') {
+            alert('只能上传 WEBM 格式的视频');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const arrayBuffer = event.target.result;
+            const data = new Uint8Array(arrayBuffer);
+            ipcRenderer.once('convert-done', (event, success, outputPath) => {
+                if (success) {
+                    mdui.snackbar('上传完成，再次上传将替换视频')
+                } else {
+                    alert('转换失败，请重试');
+                }
+            });
+            mdui.snackbar('开始上传并转换，再次上传将替换视频')
+            ipcRenderer.send('upload-webm', { data });
         };
         reader.readAsArrayBuffer(file);
     }
