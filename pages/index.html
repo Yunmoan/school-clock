@@ -11,7 +11,6 @@
 <div class="mdui-appbar mdui-appbar-fixed">
     <div class="mdui-toolbar mdui-color-indigo">
         <a href="javascript:;" class="mdui-typo-title">主页 - 校园时钟工具</a>
-        <span id="hikotoko"></span>
         <div class="mdui-toolbar-spacer"></div>
         <a href="javascript:ipcRenderer.send('kill-all');" class="mdui-btn mdui-btn-icon"
            mdui-tooltip="{content: '退出'}"><i class="mdui-icon material-icons">exit_to_app</i></a>
@@ -29,6 +28,13 @@
 
                 </div>
             </div>
+            <div class="mdui-card" id="textbox-1" style="margin-top: 8px">
+
+                <div class="mdui-card-content" style="text-align: center;padding: 15px">
+                    <pre id="textbox-1-content"
+                         style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
+                </div>
+            </div>
             <div class="mdui-card" id="gaokao-countdown-container" style="margin-top: 8px">
                 <div class="mdui-card-media">
                     <img src="assets/gaokaojiayou.jpg" height="150" width="auto"/>
@@ -39,8 +45,12 @@
                     </div>
                 </div>
             </div>
-            <div class="mdui-card" id="countdown-container" style="margin-top: 8px">
-                <div style="text-align: center;margin: 8px 0 8px 0;">
+            <div class="mdui-card" style="margin-top: 8px">
+                #2
+                <div class="mdui-card-content" style="text-align: center;padding: 15px" id="textbox-2">
+                    <pre id="textbox-2-content" style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
+                </div>
+                <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container" >
                     <h2>距离 <span id="countdown-intro" style="font-size: 25px"></span> 还有</h2>
                     <h1 id="countdown"></h1>
                 </div>
@@ -53,7 +63,7 @@
                     <ul class="mdui-list">
                         <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
                         <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
-                        <li id="HikotokoapiStatus" class="mdui-list-item mdui-ripple">...</li>
+                        <li id="hitokotoapiStatus" class="mdui-list-item mdui-ripple">...</li>
                     </ul>
                 </div>
                 <!-- 卡片的按钮 -->
@@ -65,6 +75,13 @@
 
         </div>
         <div class="mdui-col-xs-6 mdui-col-sm-4">
+            <div class="mdui-card">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    欢迎回来 <span id="hitokoto"></span>，请通过右侧选项设置本工具
+
+                </div>
+            </div>
             <div class="mdui-card">
                 <!-- 卡片的内容 -->
                 <div class="mdui-card-content">
@@ -80,7 +97,7 @@
                     <button class="mdui-btn mdui-btn-block mdui-ripple"
                             onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
                     </button>
-                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple"
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4"
                             onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')">
                         <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
                     </button>
@@ -212,13 +229,17 @@
                 const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
                 const countdownIntro = config['countdown-intro'];
                 const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
+                document.getElementById('textbox-2').style.display = 'none';
             } else {
+                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                 document.getElementById('countdown-container').style.display = 'none';
             }
 
             if (config['clock-mode']) {
                 const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
+                document.getElementById('textbox-1').style.display = 'none';
             } else {
+                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                 document.getElementById('gaokao-countdown-container').style.display = 'none';
             }
 
@@ -226,15 +247,16 @@
                 setInterval(async () => {
                     const data = await fetchHitokoto();
                     if (data) {
-                        document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
+                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
                     }
                 }, 300000); // 300000 毫秒 = 5 分钟
-                fetchHitokoto();
-                if (data) {
-                    document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
-                }
+                fetchHitokoto().then(data => {
+                    if (data) {
+                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                    }
+                });
             } else {
-                document.getElementById('hikotoko').style.display = 'none';
+                document.getElementById('hitokoto').style.display = 'none';
             }
 
             document.getElementById('username').innerText = config["user-name"];
@@ -263,7 +285,7 @@
 
     async function checkHitokotAPIStatus() {
 
-        const statusElement = document.getElementById('HikotokoapiStatus');
+        const statusElement = document.getElementById('hitokotoapiStatus');
         statusElement.textContent = '正在检查...';
         const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
         statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';

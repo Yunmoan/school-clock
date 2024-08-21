@@ -43,7 +43,13 @@
             </div>
         </div>
         <div class="mdui-col-xs-6 mdui-col-sm-4">
+            <div class="mdui-card" id="textbox-1" style="margin-bottom: 8px">
 
+                <div class="mdui-card-content" style="text-align: center;padding: 15px">
+                    <pre id="textbox-1-content"
+                         style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
+                </div>
+            </div>
             <div class="mdui-card mdui-shadow-0" style="background: rgb(255,255,255,0)">
                 <div style="text-align: center;margin: 8px 0 8px 0;">
                     <canvas id="clock" width="400%" height="400%"></canvas>
@@ -52,7 +58,7 @@
             <div class="mdui-card mdui-shadow-0" style="margin-top: 8px;background: rgb(255,255,255,0.2)">
                 <div style="text-align: center;margin: 8px 0 8px 0;">
                     <h1 id="time-container"></h1>
-                    <h3 id="hikotoko">一言载入中...</h3>
+                    <h3 id="hitokoto">一言载入中...</h3>
                 </div>
             </div>
             <div class="mdui-card" id="gaokao-countdown-container" style="margin-top: 8px">
@@ -65,8 +71,12 @@
                     </div>
                 </div>
             </div>
-            <div class="mdui-card" id="countdown-container" style="margin-top: 8px">
-                <div style="text-align: center;margin: 8px 0 8px 0;">
+            <div class="mdui-card" style="margin-top: 8px">
+                <div class="mdui-card-content" style="text-align: center;padding: 15px" id="textbox-2">
+                    <pre id="textbox-2-content"
+                         style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
+                </div>
+                <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container">
                     <h2>距离 <span id="countdown-intro" style="font-size: 25px"></span> 还有</h2>
                     <h1 id="countdown"></h1>
                 </div>
@@ -249,13 +259,17 @@
                 const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
                 const countdownIntro = config['countdown-intro'];
                 const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
+                document.getElementById('textbox-2').style.display = 'none';
             } else {
+                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                 document.getElementById('countdown-container').style.display = 'none';
             }
 
             if (config['clock-mode']) {
                 const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
+                document.getElementById('textbox-1').style.display = 'none';
             } else {
+                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                 document.getElementById('gaokao-countdown-container').style.display = 'none';
             }
 
@@ -263,16 +277,16 @@
                 setInterval(async () => {
                     const data = await fetchHitokoto();
                     if (data) {
-                        document.getElementById('hikotoko').innerText = data.hitokoto + "  —— " + data.from;
+                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
                     }
                 }, 300000); // 300000 毫秒 = 5 分钟
                 fetchHitokoto().then(data => {
                     if (data) {
-                        document.getElementById('hikotoko').innerText = data.hitokoto + "  —— "+ data.from;
+                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
                     }
                 });
             } else {
-                document.getElementById('hikotoko').style.display = 'none';
+                document.getElementById('hitokoto').style.display = 'none';
             }
             if (config['background-image']) {
                 document.body.style.background = "url(../data/" + config['background-image'] + ") no-repeat";//通过js控制改变行内样式
@@ -289,7 +303,7 @@
             }
             return await response.json(); // 将数据返回到变量中
         } catch (error) {
-            document.getElementById('hikotoko').style.display = 'none';
+            document.getElementById('hitokoto').style.display = 'none';
             return null; // 出现错误时返回 null
         }
     }

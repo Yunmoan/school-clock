@@ -120,6 +120,17 @@
                 <i class="mdui-switch-icon"></i>
             </label>
         </div>
+        <div class="mdui-textfield">
+            卡片文本编辑：#1
+            <label class="mdui-textfield-label">在高考倒计时卡片的文字(当关闭高考模式时才会显示)</label>
+            <textarea class="mdui-textfield-input" id="text-1" rows="3" placeholder="写点什么"></textarea>
+        </div>
+        <div class="mdui-textfield">
+            卡片文本编辑：#2
+            <label class="mdui-textfield-label">在倒计时卡片上显示的文本(当关闭通用倒计时时才会显示)</label>
+            <textarea class="mdui-textfield-input" id="countdowntext" rows="3" placeholder="写点什么"></textarea>
+        </div>
+
         <div class="mdui-card">
 
             <div class="mdui-card-content">
@@ -216,7 +227,7 @@
                 <ul class="mdui-list">
                     <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
                     <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
-                    <li id="HikotokoapiStatus" class="mdui-list-item mdui-ripple">...</li>
+                    <li id="hitokotoapiStatus" class="mdui-list-item mdui-ripple">...</li>
                 </ul>
             </div>
             <!-- 卡片的按钮 -->
@@ -311,6 +322,8 @@
             document.getElementById('countdown-title').value = config['countdown-intro'];
             document.getElementById('background-image-name').innerText = '已经上传的文件名:' + config['background-image'];
             document.getElementById('video-volume').value = config['video-volume'];
+            document.getElementById('countdowntext').value = config['countdowntext'];
+            document.getElementById('text-1').value = config['text-1']
             mdui.updateSliders();
         });
     };
@@ -367,6 +380,8 @@
                 "countdown-intro": document.getElementById('countdown-title').value,
                 "background-image": document.getElementById('background').value.split('\\').pop(),  // 获取文件名
                 "video-volume": document.getElementById('video-volume').value,
+                "countdowntext": document.getElementById('countdowntext').value,
+                "text-1": document.getElementById('text-1').value,
             };
 
             ipcRenderer.send('upload-background', {data, fileName: file.name, newConfig});
@@ -408,6 +423,8 @@
             "countdown-intro": document.getElementById('countdown-title').value,
             "background-image": document.getElementById('background').value.split('\\').pop(),
             "video-volume": document.getElementById('video-volume').value,
+            "countdowntext": document.getElementById('countdowntext').value,
+            "text-1": document.getElementById('text-1').value,
         };
         ipcRenderer.send('config-saved-settings', newConfig);
     }
@@ -525,7 +542,7 @@
 
     async function checkHitokotAPIStatus() {
 
-        const statusElement = document.getElementById('HikotokoapiStatus');
+        const statusElement = document.getElementById('hitokotoapiStatus');
         statusElement.textContent = '正在检查...';
         const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
         statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';
