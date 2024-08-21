@@ -46,17 +46,8 @@ app.on('ready', () => {
         });
     });
 
-    ipcMain.on('open-settings', () => {
-        createWindow('settings.html', 'settingsWindow', { width: 560, height: 800 });
-    });
-
-    ipcMain.handle('get-config', () => {
-        return configManager.readConfig();
-    });
-
-    ipcMain.on('upload-mp4_', (event, { data }) => {
+    ipcMain.on('upload-mp4', (event, { data }) => {
         const savePath = path.join('data', 'play.mp4');
-        console.log('115414')
         fs.writeFile(savePath, Buffer.from(new Uint8Array(data)), (err) => {
             if (err) {
                 console.error('Failed to save the file:', err);
@@ -67,6 +58,16 @@ app.on('ready', () => {
             event.sender.send('upload-status', true, 'File uploaded successfully');
         });
     });
+
+    ipcMain.on('open-settings', () => {
+        createWindow('settings.html', 'settingsWindow', { width: 560, height: 800 });
+    });
+
+    ipcMain.handle('get-config', () => {
+        return configManager.readConfig();
+    });
+
+
 
 
     ipcMain.on('upload-background', (event, { data, fileName ,newConfig}) => {

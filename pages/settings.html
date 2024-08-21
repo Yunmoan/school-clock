@@ -23,159 +23,162 @@
     </div>
 </div>
 <div class="mdui-container">
+    <div id="tab1">
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">用户名</label>
+            <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名"/>
 
-    <form id="configForm">
-        <div id="tab1">
-            <div class="mdui-textfield">
-                <label class="mdui-textfield-label">用户名</label>
-                <input id="userName" type="text" class="mdui-textfield-input" placeholder="用户名"/>
-
-            </div>
-            <div class="mdui-textfield">
-                <input id="appName" type="text" class="mdui-textfield-input" placeholder="应用名称"/>
-                <div class="mdui-textfield-helper">比如：XX中学走廊时钟</div>
-            </div>
-            <div class="mdui-textfield">
-                <input id="licenseCode" type="text" class="mdui-textfield-input" placeholder="许可证编码" disabled/>
-                <div class="mdui-textfield-helper">在线授权系统的许可编码，用于在线授权，请向开发者索取</div>
-            </div>
-            <div class="mdui-textfield">
-                <input id="unitCode" type="text" class="mdui-textfield-input" placeholder="单位编码" disabled/>
-                <div class="mdui-textfield-helper">由开发者提供，同步进行授权验证</div>
-            </div>
-            <div class="mdui-textfield">
-                选择时区 <br/>
-                <select id="timezone" class="mdui-select" disabled>
-                    <option value="UTC+8" selected>UTC +8 (中国北京时间)</option>
-                </select>
-            </div>
-            <div class="mdui-textfield">
-
-                是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(尚不可用)<br/>
-                <label class="mdui-switch">
-                    <input id="networkTime" type="checkbox" disabled/>
-                    <i class="mdui-switch-icon"></i>
-                </label>
-
-            </div>
-            <span>点按右上角的保存按钮来保存设定</span>
         </div>
-        <div id="tab2" style="margin-top: 16px">
-            <div class="mdui-textfield">
-                启用高考模式：（启用后,主页面与时钟页面将会显示高考倒计时）<br/>
-                <label class="mdui-switch">
-                    <input id="clock-mode" type="checkbox"/>
-                    <i class="mdui-switch-icon"></i>
-                </label>
-            </div>
-            <div class="mdui-textfield">
-
-                是否启用一言组件(需要互联网)：<br/>
-                <label class="mdui-switch">
-                    <input id="hitokoto" type="checkbox"/>
-                    <i class="mdui-switch-icon"></i>
-                </label>
-
-            </div>
-            <div class="mdui-textfield">
-                <label class="mdui-textfield-label">时间格式</label>
-                <input id="timeFormat" type="text" class="mdui-textfield-input" placeholder="YYYY-MM-DD HH:mm:ss"/>
-                <div class="mdui-textfield-helper">请勿随意修改，可参考
-                    https://www.ibm.com/docs/zh/cmofi/7.5.0?topic=reference-date-time-formats
-                </div>
-            </div>
-            <div class="mdui-textfield">
-                <label class="mdui-textfield-label">背景图片 <span id="background-image-name"></span></label>
-                <input id="background" type="file" class="mdui-textfield-input" accept="image/*"/>
-                <div class="mdui-textfield-helper">推荐大小：1920*1080</div>
-                <br/>
-                <button class="mdui-btn mdui-ripple" onclick="uploadBackground()">上传</button>
-                <button class="mdui-btn mdui-ripple" onclick="clearBackground()">清除背景</button>
-
-            </div>
-            <div class="mdui-textfield">
-                <label class="mdui-textfield-label">滚动字幕(顶)</label>
-                <input id="marquee-top" type="text" class="mdui-textfield-input" placeholder="滚动字幕(上)"/><br/>
-                <label class="mdui-slider mdui-slider-discrete">
-                    <label class="mdui-textfield-label">速度</label>
-                    <input type="range" step="1" min="1" max="10" id="marquee-top-speed"/>
-                </label>
-            </div>
-            <div class="mdui-textfield">
-                <label class="mdui-textfield-label">滚动字幕(顶)</label><br/>
-                <input id="marquee-bottom" type="text" class="mdui-textfield-input" placeholder="滚动字幕(上)"/>
-                <label class="mdui-slider mdui-slider-discrete">
-                    <label class="mdui-textfield-label">速度</label>
-                    <input type="range" step="1" min="1" max="10" id="marquee-bottom-speed"/>
-                </label>
-            </div>
-            <div class="mdui-textfield">
-                启用动态背景：(尚不支持)<br/>
-                <label class="mdui-switch">
-                    <input id="background-mode" type="checkbox" disabled/>
-                    <i class="mdui-switch-icon"></i>
-                </label>
-            </div>
-            <div class="mdui-card">
-
-                <div class="mdui-card-content">
-                    通用倒计时
-                    <label class="mdui-switch">
-                        <input id="UseCountdown" type="checkbox"/>
-                        <i class="mdui-switch-icon"></i> 启用
-                    </label>
-                    <div class="mdui-textfield">
-
-                        <input id="countdown" type="text" class="mdui-textfield-input"
-                               placeholder="2023-06-07 09:00:00"/>
-                        <div class="mdui-textfield-helper">请输入倒计时的时间，格式为 YYYY-MM-DD HHmm:ss。例如：2025-06-07
-                            09:00:00
-                        </div>
-
-                    </div>
-                    <div class="mdui-textfield">
-
-                        <input id="countdown-title" type="text" class="mdui-textfield-input" placeholder="期中考试"/>
-                        <div class="mdui-textfield-helper">请输入倒计时的内容。例如：期中考试</div>
-
-                    </div>
-
-                </div>
-            </div>
-            <div class="mdui-card" style="margin-top: 8px">
-                <div class="mdui-tab" mdui-tab>
-                    <a href="#up-tab1" class="mdui-ripple mdui-ripple-white">MP4格式</a>
-                    <a href="#up-tab2" class="mdui-ripple mdui-ripple-white">WEBM格式</a>
-                </div>
-                <!-- 卡片的内容 -->
-                <div class="mdui-card-content">
-                    上传视频演示文件
-                    <div id="up-tab1">
-                        <input type="file" class="mdui-textfield-input" id="videoUploadMP4" accept=".mp4"/>
-                        <div class="mdui-card-actions">
-                            <button class="mdui-btn mdui-ripple" onclick="uploadMP4()">上传MP4</button>
-                            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}"
-                                    style="color:darkred">怎么用？
-                            </button>
-                        </div>
-                    </div>
-                    <div id="up-tab2">
-                        <input type="file" class="mdui-textfield-input" id="videoUploadWEBM" accept=".webm"/>
-
-                        <div class="mdui-card-actions">
-                            <button class="mdui-btn mdui-ripple" onclick="uploadWEBM()">上传WEBM</button>
-                            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}"
-                                    style="color:darkred">怎么用？
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <br/><span>点按右上角的保存按钮来保存设定</span>
+        <div class="mdui-textfield">
+            <input id="appName" type="text" class="mdui-textfield-input" placeholder="应用名称"/>
+            <div class="mdui-textfield-helper">比如：XX中学走廊时钟</div>
         </div>
-        <br/>
+        <div class="mdui-textfield">
+            <input id="licenseCode" type="text" class="mdui-textfield-input" placeholder="许可证编码" disabled/>
+            <div class="mdui-textfield-helper">在线授权系统的许可编码，用于在线授权，请向开发者索取</div>
+        </div>
+        <div class="mdui-textfield">
+            <input id="unitCode" type="text" class="mdui-textfield-input" placeholder="单位编码" disabled/>
+            <div class="mdui-textfield-helper">由开发者提供，同步进行授权验证</div>
+        </div>
+        <div class="mdui-textfield">
+            选择时区 <br/>
+            <select id="timezone" class="mdui-select" disabled>
+                <option value="UTC+8" selected>UTC +8 (中国北京时间)</option>
+            </select>
+        </div>
+        <div class="mdui-textfield">
 
-    </form>
+            是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(尚不可用)<br/>
+            <label class="mdui-switch">
+                <input id="networkTime" type="checkbox" disabled/>
+                <i class="mdui-switch-icon"></i>
+            </label>
+
+        </div>
+        <span>点按右上角的保存按钮来保存设定</span>
+    </div>
+    <div id="tab2" style="margin-top: 16px">
+        <div class="mdui-textfield">
+            启用高考模式：（启用后,主页面与时钟页面将会显示高考倒计时）<br/>
+            <label class="mdui-switch">
+                <input id="clock-mode" type="checkbox"/>
+                <i class="mdui-switch-icon"></i>
+            </label>
+        </div>
+        <div class="mdui-textfield">
+
+            是否启用一言组件(需要互联网)：<br/>
+            <label class="mdui-switch">
+                <input id="hitokoto" type="checkbox"/>
+                <i class="mdui-switch-icon"></i>
+            </label>
+
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">时间格式</label>
+            <input id="timeFormat" type="text" class="mdui-textfield-input" placeholder="YYYY-MM-DD HH:mm:ss"/>
+            <div class="mdui-textfield-helper">请勿随意修改，可参考
+                https://www.ibm.com/docs/zh/cmofi/7.5.0?topic=reference-date-time-formats
+            </div>
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">背景图片 <span id="background-image-name"></span></label>
+            <input id="background" type="file" class="mdui-textfield-input" accept="image/*"/>
+            <div class="mdui-textfield-helper">推荐大小：1920*1080</div>
+            <br/>
+            <button class="mdui-btn mdui-ripple" onclick="uploadBackground()">上传</button>
+            <button class="mdui-btn mdui-ripple" onclick="clearBackground()">清除背景</button>
+
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">演示视频音量</label>
+            <label class="mdui-slider mdui-slider-discrete">
+                <input type="range" step="0.1" min="0" max="1" id="video-volume"/>
+            </label>
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">滚动字幕(顶)</label>
+            <input id="marquee-top" type="text" class="mdui-textfield-input" placeholder="滚动字幕(上)"/><br/>
+            <label class="mdui-slider mdui-slider-discrete">
+                <label class="mdui-textfield-label">速度</label>
+                <input type="range" step="1" min="1" max="10" id="marquee-top-speed"/>
+            </label>
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">滚动字幕(顶)</label><br/>
+            <input id="marquee-bottom" type="text" class="mdui-textfield-input" placeholder="滚动字幕(上)"/>
+            <label class="mdui-slider mdui-slider-discrete">
+                <label class="mdui-textfield-label">速度</label>
+                <input type="range" step="1" min="1" max="10" id="marquee-bottom-speed"/>
+            </label>
+        </div>
+        <div class="mdui-textfield">
+            启用动态背景：(尚不支持)<br/>
+            <label class="mdui-switch">
+                <input id="background-mode" type="checkbox" disabled/>
+                <i class="mdui-switch-icon"></i>
+            </label>
+        </div>
+        <div class="mdui-card">
+
+            <div class="mdui-card-content">
+                通用倒计时
+                <label class="mdui-switch">
+                    <input id="UseCountdown" type="checkbox"/>
+                    <i class="mdui-switch-icon"></i> 启用
+                </label>
+                <div class="mdui-textfield">
+
+                    <input id="countdown" type="text" class="mdui-textfield-input"
+                           placeholder="2023-06-07 09:00:00"/>
+                    <div class="mdui-textfield-helper">请输入倒计时的时间，格式为 YYYY-MM-DD HHmm:ss。例如：2025-06-07
+                        09:00:00
+                    </div>
+
+                </div>
+                <div class="mdui-textfield">
+
+                    <input id="countdown-title" type="text" class="mdui-textfield-input" placeholder="期中考试"/>
+                    <div class="mdui-textfield-helper">请输入倒计时的内容。例如：期中考试</div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="mdui-card" style="margin-top: 8px">
+            <div class="mdui-tab" mdui-tab>
+                <a href="#up-tab1" class="mdui-ripple mdui-ripple-white">MP4格式</a>
+                <a href="#up-tab2" class="mdui-ripple mdui-ripple-white">WEBM格式</a>
+            </div>
+            <!-- 卡片的内容 -->
+            <div class="mdui-card-content">
+                上传视频演示文件
+                <div id="up-tab1">
+                    <input type="file" class="mdui-textfield-input" id="videoUploadMP4" accept=".mp4"/>
+                    <div class="mdui-card-actions">
+                        <button class="mdui-btn mdui-ripple" onclick="uploadMP4()">上传MP4</button>
+                        <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}"
+                                style="color:darkred">怎么用？
+                        </button>
+                    </div>
+                </div>
+                <div id="up-tab2">
+                    <input type="file" class="mdui-textfield-input" id="videoUploadWEBM" accept=".webm"/>
+
+                    <div class="mdui-card-actions">
+                        <button class="mdui-btn mdui-ripple" onclick="uploadWEBM()">上传WEBM</button>
+                        <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-1'}"
+                                style="color:darkred">怎么用？
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br/><span>点按右上角的保存按钮来保存设定</span>
+    </div>
+    <br/>
+
     <div id="tab3" style="margin-top: 16px">
 
 
@@ -183,9 +186,13 @@
             <!-- 卡片的内容 -->
             <div class="mdui-card-content">
                 系统信息
+
+                </form>
                 <ul class="mdui-list">
                     <li class="mdui-list-item mdui-ripple">版本：1.0.0</li>
                     <li class="mdui-list-item mdui-ripple">发行：至远光辉信息技术(Software)</li>
+                    <li class="mdui-list-item mdui-ripple" id="electron-version"></li>
+                    <li class="mdui-list-item mdui-ripple" id="chromium-version"></li>
                     <div id="systemInfoList"></div>
                     <li class="mdui-list-item mdui-ripple">特别鸣谢：OPENAI ChatGPT 4 / 4o</li>
                 </ul>
@@ -279,6 +286,11 @@
 <script>
     const {ipcRenderer} = require('electron');
 
+    const electronVersion = process.versions.electron;
+    const chromiumVersion = process.versions.chrome;
+
+    document.getElementById('electron-version').innerText = "Electron 版本: " + electronVersion;
+    document.getElementById('chromium-version').innerText = "Chromium 内核版本" + chromiumVersion;
     // 页面加载时从主进程获取配置并填充表单
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
@@ -298,6 +310,7 @@
             document.getElementById('countdown').value = config['countdown-date'];
             document.getElementById('countdown-title').value = config['countdown-intro'];
             document.getElementById('background-image-name').innerText = '已经上传的文件名:' + config['background-image'];
+            document.getElementById('video-volume').value = config['video-volume'];
             mdui.updateSliders();
         });
     };
@@ -353,10 +366,10 @@
                 "countdown-date": document.getElementById('countdown').value,
                 "countdown-intro": document.getElementById('countdown-title').value,
                 "background-image": document.getElementById('background').value.split('\\').pop(),  // 获取文件名
-
+                "video-volume": document.getElementById('video-volume').value,
             };
 
-            ipcRenderer.send('upload-background', { data, fileName: file.name , newConfig});
+            ipcRenderer.send('upload-background', {data, fileName: file.name, newConfig});
             mdui.snackbar('背景图片上传完成');
         };
         reader.readAsArrayBuffer(file);
@@ -369,7 +382,7 @@
         infoList.innerHTML = `
                 <li class="mdui-list-item mdui-ripple">系统时间: ${systemInfo.currentTime}</li>
                 <li class="mdui-list-item mdui-ripple">系统时区: ${systemInfo.timeZone}</li>
-                <li class="mdui-list-item mdui-ripple">系统架构: ${systemInfo.osType}_${systemInfo.platform}_${systemInfo.architecture}</li>
+                <li class="mdui-list-item mdui-ripple">系统架构: ${systemInfo.osType}_${systemInfo.platform}_${systemInfo.architecture} (${systemInfo.release})</li>
                 <li class="mdui-list-item mdui-ripple">总内存大小: ${(systemInfo.totalMemory / 1024 / 1024).toFixed(2)} MB</li>
                 <li class="mdui-list-item mdui-ripple">已使用/空闲: ${(systemInfo.usedMemory / 1024 / 1024).toFixed(2)} MB / ${(systemInfo.freeMemory / 1024 / 1024).toFixed(2)} MB</li>
             `;
@@ -393,8 +406,8 @@
             "UseCountdown": document.getElementById('UseCountdown').checked,
             "countdown-date": document.getElementById('countdown').value,
             "countdown-intro": document.getElementById('countdown-title').value,
-            "background-image": document.getElementById('background').value.split('\\').pop(),  // 获取文件名
-
+            "background-image": document.getElementById('background').value.split('\\').pop(),
+            "video-volume": document.getElementById('video-volume').value,
         };
         ipcRenderer.send('config-saved-settings', newConfig);
     }
@@ -412,26 +425,21 @@
             return;
         }
 
-        if (!['video/mp4', 'video/x-m4v'].includes(file.type)) {
+        if (!['video/mp4'].includes(file.type)) {
             alert('只能上传 MP4 格式的视频');
-            return;
-        }
-
-        const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-        if (file.size > MAX_FILE_SIZE) {
-            alert('文件过大，请选择小于 100MB 的文件');
             return;
         }
 
         const reader = new FileReader();
         reader.onload = function (event) {
             const arrayBuffer = event.target.result;
-            // Convert ArrayBuffer to Uint8Array
             const data = new Uint8Array(arrayBuffer);
+            mdui.snackbar('开始上传并转换，再次上传将替换视频')
             ipcRenderer.send('upload-mp4', {data});
-            mdui.snackbar('上传完成，再次上传将替换视频')
         };
         reader.readAsArrayBuffer(file);
+
+
     }
 
     function uploadWEBM() {
@@ -464,8 +472,6 @@
         };
         reader.readAsArrayBuffer(file);
     }
-
-    var $ = mdui.$;
 
     function resetSettings() {
 

@@ -92,6 +92,7 @@
 </div>
 <script>
     const {ipcRenderer} = require('electron');
+    const moment = require('moment');
 
     // 倒计时类
     class Countdown {
@@ -202,7 +203,10 @@
         ipcRenderer.invoke('get-config').then((config) => {
 
             timeFormat = config['time-format'];
-
+            // Initial checks
+            checkHitokotAPIStatus();
+            updateNetworkStatus();
+            checkAPIStatus();
             if (config['UseCountdown']) {
                 // 初始化倒计时组件
                 const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
@@ -265,10 +269,7 @@
         statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';
     }
 
-    // Initial checks
-    checkHitokotAPIStatus();
-    updateNetworkStatus();
-    checkAPIStatus();
+
 </script>
 </body>
 </html>

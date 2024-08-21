@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "云默安",
-  "license": "ISC",
+  "license": "GPL3.0",
   "description": "",
   "dependencies": {
     "electron": "^22.3.27",

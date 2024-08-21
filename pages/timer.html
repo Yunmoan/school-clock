@@ -28,7 +28,6 @@
             will-change: transform;
             padding: 28px;
             font-size: 8vh;
-            color: black;
         }
     </style>
     <link rel="stylesheet" href="assets/css/mdui.min.css">
@@ -210,7 +209,7 @@
             this.startCountdown(targetDate, endDate, gaokaoyear);
         }
 
-        updateCountdown(targetDate, endDate,gaokaoyear) {
+        updateCountdown(targetDate, endDate, gaokaoyear) {
             const now = new Date();
             const timeDiff = targetDate - now;
 
@@ -230,9 +229,9 @@
             }
         }
 
-        startCountdown(targetDate, endDate,gaokaoyear) {
+        startCountdown(targetDate, endDate, gaokaoyear) {
             setInterval(() => {
-                this.updateCountdown(targetDate, endDate,gaokaoyear);
+                this.updateCountdown(targetDate, endDate, gaokaoyear);
             }, 1000);
         }
     }
@@ -242,6 +241,8 @@
             timeFormat = config['time-format'];
             const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
             const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
+
+            document.getElementById('videoPlayer').volume = config['video-volume'];
 
             if (config['UseCountdown']) {
                 // 初始化倒计时组件
@@ -262,19 +263,21 @@
                 setInterval(async () => {
                     const data = await fetchHitokoto();
                     if (data) {
-                        document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
+                        document.getElementById('hikotoko').innerText = data.hitokoto + "  —— " + data.from;
                     }
                 }, 300000); // 300000 毫秒 = 5 分钟
-                fetchHitokoto();
-                if (data) {
-                    document.getElementById('hikotoko').innerText = data.hitokoto + "  ——《" +data.from+"》";
-                }
+                fetchHitokoto().then(data => {
+                    if (data) {
+                        document.getElementById('hikotoko').innerText = data.hitokoto + "  —— "+ data.from;
+                    }
+                });
             } else {
                 document.getElementById('hikotoko').style.display = 'none';
             }
-
-            document.body.style.background = "url(../data/"+config['background-image']+") no-repeat";//通过js控制改变行内样式
-            document.body.style.backgroundSize = "cover";
+            if (config['background-image']) {
+                document.body.style.background = "url(../data/" + config['background-image'] + ") no-repeat";//通过js控制改变行内样式
+                document.body.style.backgroundSize = "cover";
+            }
         });
     };
 
@@ -284,8 +287,7 @@
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            const data = await response.json();
-            return data; // 将数据返回到变量中
+            return await response.json(); // 将数据返回到变量中
         } catch (error) {
             document.getElementById('hikotoko').style.display = 'none';
             return null; // 出现错误时返回 null
@@ -293,7 +295,6 @@
     }
 
     // 调用示例
-
 
 
     const moment = require('moment');

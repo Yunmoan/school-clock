@@ -10,6 +10,7 @@ function getSystemInfo() {
         freeMemory: os.freemem(),
         usedMemory: os.totalmem() - os.freemem(),
         osType: os.type(),
+        release: os.release(),
     };
 }
 
