@@ -1,7 +1,9 @@
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs');
-const ffmpegPath = require('ffmpeg-static');
+
+// 在开发模式和生产模式下分别设置 ffmpeg 的路径
+const ffmpegPath = process.env.NODE_ENV === 'development' ? require('ffmpeg-static') : path.join(process.resourcesPath, 'ffmpeg-static', 'ffmpeg');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
