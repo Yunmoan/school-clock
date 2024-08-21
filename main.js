@@ -13,6 +13,9 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir);
 }
 
+// app.disableHardwareAcceleration();
+// app.commandLine.appendSwitch('disable-gpu');
+
 app.on('ready', () => {
     global.global_config = configManager.readConfig();
 
@@ -51,17 +54,20 @@ app.on('ready', () => {
         return configManager.readConfig();
     });
 
-    ipcMain.on('upload-mp4', (event, { data }) => {
-        const savePath = path.join(dataDir, 'play.mp4');
-
+    ipcMain.on('upload-mp4_', (event, { data }) => {
+        const savePath = path.join('data', 'play.mp4');
+        console.log('115414')
         fs.writeFile(savePath, Buffer.from(new Uint8Array(data)), (err) => {
             if (err) {
                 console.error('Failed to save the file:', err);
+                event.sender.send('upload-status', false, 'File save failed');
                 return;
             }
             console.log('File saved as play.mp4:', savePath);
+            event.sender.send('upload-status', true, 'File uploaded successfully');
         });
     });
+
 
     ipcMain.on('upload-background', (event, { data, fileName ,newConfig}) => {
         const savePath = path.join('data', fileName);
