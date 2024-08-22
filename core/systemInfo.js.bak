@@ -1,0 +1,58 @@
+const os = require('os');
+const ntpClient = require('ntp-client');
+
+let networkCurrentTime = null;
+let networkTime = false;
+let ntpServer = 'ntp.aliyun.com'; // 默认NTP服务器
+
+// 同步网络时间的函数
+function syncNetworkTime() {
+    const ntpPort = 123; // NTP端口
+
+    ntpClient.getNetworkTime(ntpServer, ntpPort, function(err, date) {
+        if (err) {
+            console.error('NTP time sync error:', err);
+            return;
+        }
+        networkCurrentTime = date;
+        console.log('Network time synchronized:', networkCurrentTime.toLocaleString());
+
+        // 开始内部时钟，每秒更新 networkCurrentTime
+        setInterval(() => {
+            networkCurrentTime.setSeconds(networkCurrentTime.getSeconds() + 1);
+        }, 1000);
+    });
+
+    // 每24小时再次同步NTP时间
+    setInterval(syncNetworkTime, 24 * 60 * 60 * 1000);
+}
+
+// 初始化并同步时间（由主进程调用）
+function initializeTimeSync(config) {
+    networkTime = config["network-time"];
+    if (networkTime) {
+        syncNetworkTime();
+    }
+}
+
+function getSystemInfo() {
+    let currentTime = networkCurrentTime ? networkCurrentTime.toLocaleString() : new Date().toLocaleString();
+    let timeStatus = networkCurrentTime ? 'Network' : 'Local';
+    let ntpServerStatus = networkCurrentTime ? ntpServer : 'N/A';
+
+    return {
+        currentTime: currentTime,
+        timeStatus: timeStatus,
+        timeServer: ntpServerStatus,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        architecture: os.arch(),
+        platform: os.platform(),
+        totalMemory: os.totalmem(),
+        freeMemory: os.freemem(),
+        usedMemory: os.totalmem() - os.freemem(),
+        osType: os.type(),
+        release: os.release(),
+    };
+}
+
+module.exports = { getSystemInfo, initializeTimeSync };

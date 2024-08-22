@@ -4,7 +4,7 @@ const path = require('path');
 const configManager = require('./core/configManager');
 const { createWindow, closeWindow } = require('./core/windowManager');
 const { convertWebmToMp4, deleteFile } = require('./core/videoConverter');
-const { getSystemInfo } = require('./core/systemInfo');
+const { getSystemInfo, initializeTimeSync } = require('./core/systemInfo');
 const { checkNetworkStatus, checkURLStatus } = require('./core/networkStatus');
 
 // 获取用户数据目录
@@ -16,9 +16,11 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// 其余代码不变
 app.on('ready', () => {
     global.global_config = configManager.readConfig();
+
+    // 初始化并同步时间
+    initializeTimeSync(global.global_config);
 
     // 配置文件路径
     const configFilePath = path.join(app.getPath('userData'), 'data', 'config.json');
@@ -46,8 +48,6 @@ app.on('ready', () => {
     ipcMain.on('open-url', (event, url) => {
         shell.openExternal(url);
     });
-
-
 
     ipcMain.on('upload-webm', (event, { data }) => {
         const inputPath = path.join(dataDir, 'input.webm');
