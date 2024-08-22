@@ -63,12 +63,11 @@
                     <ul class="mdui-list">
                         <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
                         <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
-                        <li id="hitokotoapiStatus" class="mdui-list-item mdui-ripple">...</li>
                     </ul>
                 </div>
                 <!-- 卡片的按钮 -->
                 <div class="mdui-card-actions">
-                    <button class="mdui-btn mdui-ripple" onclick="checkHitokotAPIStatus();updateNetworkStatus();checkAPIStatus();">重新检测</button>
+                    <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();">重新检测</button>
                 </div>
             </div><br/>
 
@@ -233,7 +232,7 @@
 
             timeFormat = config['time-format'];
             // Initial checks
-            checkHitokotAPIStatus();
+
             updateNetworkStatus();
             checkAPIStatus();
             if (config['UseCountdown']) {
@@ -302,14 +301,6 @@
         statusElement.textContent = '正在检查...';
         const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://api.zyghit.cn');
         statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常' : '无法访问API';
-    }
-
-    async function checkHitokotAPIStatus() {
-
-        const statusElement = document.getElementById('hitokotoapiStatus');
-        statusElement.textContent = '正在检查...';
-        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
-        statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';
     }
 
 
