@@ -49,9 +49,9 @@
         </div>
         <div class="mdui-textfield">
 
-            是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(尚不可用)<br/>
+            是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(重启生效)<br/>
             <label class="mdui-switch">
-                <input id="networkTime" type="checkbox" disabled/>
+                <input id="networkTime" type="checkbox"/>
                 <i class="mdui-switch-icon"></i>
             </label>
 
@@ -200,7 +200,7 @@
 
                 </form>
                 <ul class="mdui-list">
-                    <li class="mdui-list-item mdui-ripple">版本：1.0.0</li>
+                    <li class="mdui-list-item mdui-ripple">版本：1.0.2</li>
                     <li class="mdui-list-item mdui-ripple">发行：至远光辉信息技术(Software)</li>
                     <li class="mdui-list-item mdui-ripple" id="electron-version"></li>
                     <li class="mdui-list-item mdui-ripple" id="chromium-version"></li>
@@ -302,6 +302,7 @@
 
     const electronVersion = process.versions.electron;
     const chromiumVersion = process.versions.chrome;
+    let originalNetworkTime = null; // 用于存储最初的 network-time 状态
 
     document.getElementById('electron-version').innerText = "Electron 版本: " + electronVersion;
     document.getElementById('chromium-version').innerText = "Chromium 内核版本" + chromiumVersion;
@@ -313,6 +314,7 @@
             document.getElementById('licenseCode').value = config["license-code"];
             document.getElementById('unitCode').value = config["unit-code"];
             document.getElementById('networkTime').checked = config["network-time"];
+            originalNetworkTime = config["network-time"]; // 存储初始的 network-time 状态
             document.getElementById('clock-mode').checked = config["clock-mode"];
             document.getElementById('timeFormat').value = config['time-format'];
             document.getElementById('marquee-bottom').value = config['marquee-bottom'];
@@ -333,8 +335,28 @@
 
     // 保存按钮点击事件
     document.getElementById('saveButton').addEventListener('click', () => {
+    const currentNetworkTime = document.getElementById('networkTime').checked;
+
+    // 检测 network-time 是否被修改
+    if (currentNetworkTime !== originalNetworkTime) {
+        // 弹出提示框
+        mdui.dialog({
+            title: '请重启程序',
+            content: '你修改了网络时间设置，重启生效。记得重启嗷！･◡･',
+            buttons: [
+                {
+                    text: '好的',
+                    onClick: function () {
+                        saveConfig(); // 调用保存配置函数
+                    }
+                }
+            ]
+        });
+    } else {
+        // 如果没有修改 network-time，直接保存并关闭
         saveConfig();
-    });
+    }
+});
 
     function clearBackground() {
         // 清除文件输入框中的文件
@@ -370,7 +392,7 @@
                 "app-name": document.getElementById('appName').value,
                 "license-code": document.getElementById('licenseCode').value,
                 "unit-code": document.getElementById('unitCode').value,
-                "network-time": false,
+                "network-time": document.getElementById('networkTime').checked,
                 "clock-mode": document.getElementById('clock-mode').checked,
                 "time-format": document.getElementById('timeFormat').value,
                 "marquee-bottom": document.getElementById('marquee-bottom').value,
@@ -398,7 +420,9 @@
         const infoList = document.getElementById('systemInfoList');
 
         infoList.innerHTML = `
-                <li class="mdui-list-item mdui-ripple">系统时间: ${systemInfo.currentTime}</li>
+                <li class="mdui-list-item mdui-ripple">当前时间: ${systemInfo.currentTime}</li>
+                <li class="mdui-list-item mdui-ripple">时间状态: ${systemInfo.timeStatus}</li>
+                <li class="mdui-list-item mdui-ripple">时间服务器: ${systemInfo.timeServer}</li>
                 <li class="mdui-list-item mdui-ripple">系统时区: ${systemInfo.timeZone}</li>
                 <li class="mdui-list-item mdui-ripple">系统架构: ${systemInfo.osType}_${systemInfo.platform}_${systemInfo.architecture} (${systemInfo.release})</li>
                 <li class="mdui-list-item mdui-ripple">总内存大小: ${(systemInfo.totalMemory / 1024 / 1024).toFixed(2)} MB</li>
@@ -408,29 +432,30 @@
 
     // 保存配置函数
     function saveConfig() {
-        const newConfig = {
-            "user-name": document.getElementById('userName').value,
-            "app-name": document.getElementById('appName').value,
-            "license-code": document.getElementById('licenseCode').value,
-            "unit-code": document.getElementById('unitCode').value,
-            "network-time": false,
-            "clock-mode": document.getElementById('clock-mode').checked,
-            "time-format": document.getElementById('timeFormat').value,
-            "marquee-bottom": document.getElementById('marquee-bottom').value,
-            "marquee-top": document.getElementById('marquee-top').value,
-            "marquee-top-speed": document.getElementById('marquee-top-speed').value,
-            "marquee-bottom-speed": document.getElementById('marquee-bottom-speed').value,
-            "hitokoto": document.getElementById('hitokoto').checked,
-            "UseCountdown": document.getElementById('UseCountdown').checked,
-            "countdown-date": document.getElementById('countdown').value,
-            "countdown-intro": document.getElementById('countdown-title').value,
-            "background-image": document.getElementById('background').value.split('\\').pop(),
-            "video-volume": document.getElementById('video-volume').value,
-            "countdowntext": document.getElementById('countdowntext').value,
-            "text-1": document.getElementById('text-1').value,
-        };
-        ipcRenderer.send('config-saved-settings', newConfig);
-    }
+    const newConfig = {
+        "user-name": document.getElementById('userName').value,
+        "app-name": document.getElementById('appName').value,
+        "license-code": document.getElementById('licenseCode').value,
+        "unit-code": document.getElementById('unitCode').value,
+        "network-time": document.getElementById('networkTime').checked,
+        "clock-mode": document.getElementById('clock-mode').checked,
+        "time-format": document.getElementById('timeFormat').value,
+        "marquee-bottom": document.getElementById('marquee-bottom').value,
+        "marquee-top": document.getElementById('marquee-top').value,
+        "marquee-top-speed": document.getElementById('marquee-top-speed').value,
+        "marquee-bottom-speed": document.getElementById('marquee-bottom-speed').value,
+        "hitokoto": document.getElementById('hitokoto').checked,
+        "UseCountdown": document.getElementById('UseCountdown').checked,
+        "countdown-date": document.getElementById('countdown').value,
+        "countdown-intro": document.getElementById('countdown-title').value,
+        "background-image": document.getElementById('background').value.split('\\').pop(),
+        "video-volume": document.getElementById('video-volume').value,
+        "countdowntext": document.getElementById('countdowntext').value,
+        "text-1": document.getElementById('text-1').value,
+    };
+    ipcRenderer.send('config-saved-settings', newConfig);
+  }
+
 
     document.getElementById('exitButton').addEventListener('click', () => {
         ipcRenderer.send('close-window', "settingsWindow");
