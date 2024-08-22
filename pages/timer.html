@@ -356,10 +356,9 @@
     ctx.translate(radius, radius);
 
     async function fetchConfigAndStartClock() {
-        const config = await ipcRenderer.invoke('get-config');
-        let useNetworkTime = config["network-time"];
-        startClock(useNetworkTime);
-    }
+    startClock(); 
+}
+
 
     function drawClock() {
         drawFace(ctx, radius);
@@ -401,34 +400,19 @@
         ctx.fill();
     }
 
-    async function getCurrentTime(useNetworkTime) {
-        let now;
+    function getCurrentTime() {
+    const now = new Date(); 
+    const hour = now.getHours() % 12;
+    const minute = now.getMinutes();
+    const second = now.getSeconds();
+    const millisecond = now.getMilliseconds();
 
-        if (useNetworkTime) {
-            const response = await fetch('https://api.zyghit.cn/time-aligned');
-            if (!response.ok) {
-                throw new Error('Failed to fetch network time');
-            }
-            const data = await response.json();
-            if (!data.time) {
-                throw new Error('Invalid time data');
-            }
-            now = new Date(parseInt(data.time));
-        } else {
-            now = new Date();
-        }
-
-        const hour = now.getHours() % 12;
-        const minute = now.getMinutes();
-        const second = now.getSeconds();
-        const millisecond = now.getMilliseconds();
-
-        return {
-            hour: (hour * Math.PI / 6) + (minute * Math.PI / 360) + (second * Math.PI / 21600),
-            minute: (minute * Math.PI / 30) + (second * Math.PI / 1800),
-            second: (second * Math.PI / 30) + (millisecond * Math.PI / 30000)
-        };
-    }
+    return {
+        hour: (hour * Math.PI / 6) + (minute * Math.PI / 360) + (second * Math.PI / 21600),
+        minute: (minute * Math.PI / 30) + (second * Math.PI / 1800),
+        second: (second * Math.PI / 30) + (millisecond * Math.PI / 30000)
+    };
+}
 
     function drawHand(ctx, pos, length, width) {
         ctx.beginPath();
@@ -442,57 +426,57 @@
         ctx.rotate(-pos);
     }
 
-    function startClock(useNetworkTime) {
-        getCurrentTime(useNetworkTime).then((endAngles) => {
-            let startTime = Date.now();
-            let durations = {
-                second: 3000,
-                minute: 2000,
-                hour: 1000
-            };
+    function startClock() {
+    const endAngles = getCurrentTime();
+    let startTime = Date.now();
+    let durations = {
+        second: 3000,
+        minute: 2000,
+        hour: 1000
+    };
 
-            const animate = () => {
-                let currentTime = Date.now();
-                let elapsed = currentTime - startTime;
+    const animate = () => {
+        let currentTime = Date.now();
+        let elapsed = currentTime - startTime;
 
+        ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
+        drawClock();
+
+        const secondAngle = elapsed < durations.second
+            ? (elapsed / durations.second) * endAngles.second
+            : endAngles.second;
+
+        const minuteAngle = elapsed < durations.minute
+            ? (elapsed / durations.minute) * endAngles.minute
+            : endAngles.minute;
+
+        const hourAngle = elapsed < durations.hour
+            ? (elapsed / durations.hour) * endAngles.hour
+            : endAngles.hour;
+
+        drawHand(ctx, hourAngle, radius * 0.5, radius * 0.05);
+        drawHand(ctx, minuteAngle, radius * 0.8, radius * 0.05);
+        drawHand(ctx, secondAngle, radius * 0.9, radius * 0.02);
+
+        if (elapsed < durations.hour || elapsed < durations.minute || elapsed < durations.second) {
+            requestAnimationFrame(animate);
+        } else {
+            const smoothTimeUpdate = () => {
                 ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
                 drawClock();
-
-                const secondAngle = elapsed < durations.second
-                    ? (elapsed / durations.second) * endAngles.second
-                    : endAngles.second;
-
-                const minuteAngle = elapsed < durations.minute
-                    ? (elapsed / durations.minute) * endAngles.minute
-                    : endAngles.minute;
-
-                const hourAngle = elapsed < durations.hour
-                    ? (elapsed / durations.hour) * endAngles.hour
-                    : endAngles.hour;
-
-                drawHand(ctx, hourAngle, radius * 0.5, radius * 0.05);
-                drawHand(ctx, minuteAngle, radius * 0.8, radius * 0.05);
-                drawHand(ctx, secondAngle, radius * 0.9, radius * 0.02);
-
-                if (elapsed < durations.hour || elapsed < durations.minute || elapsed < durations.second) {
-                    requestAnimationFrame(animate);
-                } else {
-                    const smoothTimeUpdate = async () => {
-                        ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
-                        drawClock();
-                        const currentAngles = await getCurrentTime(useNetworkTime);
-                        drawHand(ctx, currentAngles.hour, radius * 0.5, radius * 0.05);
-                        drawHand(ctx, currentAngles.minute, radius * 0.8, radius * 0.05);
-                        drawHand(ctx, currentAngles.second, radius * 0.9, radius * 0.02);
-                        requestAnimationFrame(smoothTimeUpdate);
-                    };
-                    smoothTimeUpdate();
-                }
+                const currentAngles = getCurrentTime();
+                drawHand(ctx, currentAngles.hour, radius * 0.5, radius * 0.05);
+                drawHand(ctx, currentAngles.minute, radius * 0.8, radius * 0.05);
+                drawHand(ctx, currentAngles.second, radius * 0.9, radius * 0.02);
+                requestAnimationFrame(smoothTimeUpdate);
             };
+            smoothTimeUpdate();
+        }
+    };
 
-            animate();
-        });
-    }
+    animate();
+}
+
 
     fetchConfigAndStartClock();
 </script>
