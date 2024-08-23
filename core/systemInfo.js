@@ -4,7 +4,7 @@ const axios = require('axios');
 let networkCurrentTime = null;
 let networkTime = false;
 let timeServer = 'https://api.zyghit.cn/time-aligned?type=unix'; // 使用的时间服务接口
-let timeServerDomain = 'api.zyghit.cn'; // 单独定义域名
+
 
 // 通过HTTP GET请求同步网络时间的函数
 async function syncNetworkTime() {
@@ -40,6 +40,7 @@ function initializeTimeSync(config) {
 function getSystemInfo() {
     let currentTime = networkCurrentTime ? networkCurrentTime.toLocaleString() : new Date().toLocaleString();
     let timeStatus = networkCurrentTime ? 'Network' : 'Local';
+    let timeServerDomain = networkCurrentTime ? 'api.zyghit.cn' : 'N/A'; // 单独定义域名
 
     return {
         currentTime: currentTime,

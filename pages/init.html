@@ -42,7 +42,7 @@
 
                 是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(重启生效)<br/>
                 <label class="mdui-switch">
-                    <input id="networkTime" type="checkbox" disabled/>
+                    <input id="networkTime" type="checkbox"/>
                     <i class="mdui-switch-icon"></i>
                 </label>
 
@@ -87,7 +87,7 @@
             const newConfig = {
                 "app-name": document.getElementById('appName').value,
                 "user-name": document.getElementById('userName').value,
-                "network-time": document.getElementById('nnetworkTime').checked,
+                "network-time": document.getElementById('networkTime').checked,
                 "license-code": document.getElementById('licenseCode').value,
                 "unit-code": document.getElementById('unitCode').value,
                 "clock-mode": document.getElementById('clock-mode').checked,

@@ -98,6 +98,11 @@
 
     </div>
 </div>
+<button id="mute-button" class="mdui-fab mdui-fab-mini mdui-ripple mdui-fab-fixed" 
+        style="right: 70px;" mdui-tooltip="{content: '静音/恢复'}">
+    <i id="mute-icon" class="mdui-icon material-icons">volume_up</i>
+</button>
+
 <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-fab-fixed" mdui-tooltip="{content: '返回主页'}"
         onclick="ipcRenderer.send('close-window','timerWindow');ipcRenderer.send('open-window','index.html', 'mainWindow', { width: 900, height: 600 })">
     <i class="mdui-icon material-icons">exit_to_app</i>
@@ -247,71 +252,82 @@
     }
 
     window.onload = () => {
+    ipcRenderer.invoke('get-config').then((config) => {
+        timeFormat = config['time-format'];
+        const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
+        const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
 
-
-
-        ipcRenderer.invoke('get-config').then((config) => {
-            timeFormat = config['time-format'];
-            const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
-            const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
-
-            document.getElementById('company').innerText = config['unit-code'];
-            ipcRenderer.invoke('get-config-directory').then((path) => {
-                document.getElementById('videoPlayer').src = path + '/play.mp4';
-                if (config['background-image']) {
-                    document.body.style.background = "url(" + path +"/"+ config['background-image'] + ") no-repeat";//通过js控制改变行内样式
-                    document.body.style.backgroundSize = "cover";
+        document.getElementById('company').innerText = config['unit-code'];
+        ipcRenderer.invoke('get-config-directory').then((path) => {
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = path + '/play.mp4';
+            if (config['background-image']) {
+                document.body.style.background = "url(" + path +"/"+ config['background-image'] + ") no-repeat";//通过js控制改变行内样式
+                document.body.style.backgroundSize = "cover";
+            }
+            
+            // 添加静音按钮功能
+            const muteButton = document.getElementById('mute-button');
+            const muteIcon = document.getElementById('mute-icon');
+            
+            muteButton.addEventListener('click', () => {
+                if (videoPlayer.muted) {
+                    videoPlayer.muted = false;
+                    muteIcon.textContent = 'volume_up';
+                } else {
+                    videoPlayer.muted = true;
+                    muteIcon.textContent = 'volume_off';
                 }
-
             });
-
-            document.getElementById('videoPlayer').volume = config['video-volume'];
-
-            if (config['UseCountdown']) {
-                // 初始化倒计时组件
-                const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
-                const countdownIntro = config['countdown-intro'];
-                const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
-                document.getElementById('textbox-2').style.display = 'none';
-            } else {
-                if(config['countdowntext']){
-                    document.getElementById('textbox-2-content').innerText = config['countdowntext'];
-                } else {
-                    document.getElementById('textbox-2').style.display = 'none';
-                }
-                document.getElementById('countdown-container').style.display = 'none';
-            }
-
-            if (config['clock-mode']) {
-                const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
-                document.getElementById('textbox-1').style.display = 'none';
-            } else {
-                if(config['text-1']){
-                document.getElementById('textbox-1-content').innerText = config['text-1'];
-                } else {
-                    document.getElementById('textbox-1').style.display = 'none';
-                }
-                document.getElementById('gaokao-countdown-container').style.display = 'none';
-            }
-
-            if (config['hitokoto']) {
-                setInterval(async () => {
-                    const data = await fetchHitokoto();
-                    if (data) {
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
-                    }
-                }, 300000); // 300000 毫秒 = 5 分钟
-                fetchHitokoto().then(data => {
-                    if (data) {
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
-                    }
-                });
-            } else {
-                document.getElementById('hitokoto').style.display = 'none';
-            }
-
         });
-    };
+
+        document.getElementById('videoPlayer').volume = config['video-volume'];
+
+        if (config['UseCountdown']) {
+            // 初始化倒计时组件
+            const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
+            const countdownIntro = config['countdown-intro'];
+            const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
+            document.getElementById('textbox-2').style.display = 'none';
+        } else {
+            if(config['countdowntext']){
+                document.getElementById('textbox-2-content').innerText = config['countdowntext'];
+            } else {
+                document.getElementById('textbox-2').style.display = 'none';
+            }
+            document.getElementById('countdown-container').style.display = 'none';
+        }
+
+        if (config['clock-mode']) {
+            const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
+            document.getElementById('textbox-1').style.display = 'none';
+        } else {
+            if(config['text-1']){
+                document.getElementById('textbox-1-content').innerText = config['text-1'];
+            } else {
+                document.getElementById('textbox-1').style.display = 'none';
+            }
+            document.getElementById('gaokao-countdown-container').style.display = 'none';
+        }
+
+        if (config['hitokoto']) {
+            setInterval(async () => {
+                const data = await fetchHitokoto();
+                if (data) {
+                    document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                }
+            }, 300000); // 300000 毫秒 = 5 分钟
+            fetchHitokoto().then(data => {
+                if (data) {
+                    document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                }
+            });
+        } else {
+            document.getElementById('hitokoto').style.display = 'none';
+        }
+
+    });
+};
 
     async function fetchHitokoto() {
         try {
