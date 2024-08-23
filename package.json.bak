@@ -27,20 +27,6 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     },
-    "mac": {
-      "target": [
-        {
-          "target": "zip",
-          "arch": ["x64", "arm64"]
-        }
-      ],
-      "category": "public.app-category.utilities",
-      "icon": "core/clock.icns",
-      "hardenedRuntime": true,
-      "entitlements": "macosbuilddependencies/entitlements.plist",
-      "entitlementsInherit": "macosbuilddependencies/entitlementsInherit.plist",
-      "gatekeeperAssess": true
-    },
     "extraFiles": [
       {
         "from": "node_modules/ffmpeg-static",
