@@ -15,6 +15,7 @@
     <ul class="mdui-list" >
         <li id="networkStatus"  class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
         <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
+        <li id="weatherapiStatus" class="mdui-list-item mdui-ripple">...</li>
     </ul>
         <form id="configForm">
             <div class="mdui-textfield">
@@ -56,6 +57,13 @@
                     </label>
                 </div>
             </div>
+            <div class="mdui-textfield">
+                <input id="weather-code" type="text" class="mdui-textfield-input" placeholder="高德地图天气编码"/>
+                <div class="mdui-textfield-helper">高德地图天气接口编码。如：北京市：110000，唐山市：130200</div>
+                <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-2'}"
+                >查询天气代码
+                </button>
+            </div>
 
             <button class="mdui-btn mdui-btn-raised" type="submit">保存配置</button>
         </form>
@@ -65,7 +73,15 @@
             这是一个自由软件（Free Software），其完整源代码已在 Github 开源。<br/>若有更多需求欢迎自行修改源代码。<br/><br/>此软件基于 GPL 3.0 (GNU GENERAL PUBLIC LICENSE 3.0) 协议授权分发，任何代码修改或自发行必须遵循此协议。受国际法律保护。<br/>任何组织或个人不得将其部分/完整源代码进行商业行为。
 
         </div>
-
+            <div class="mdui-dialog" id="example-2">
+                <div class="mdui-dialog-content">
+                    <div class="mdui-dialog-title">高德地图天气接口地区编码</div>
+                    <iframe src="assets/weather_codes.html" width="100%" height="500px" frameborder="0"></iframe>
+                </div>
+                <div class="mdui-dialog-actions">
+                    <button class="mdui-btn mdui-ripple" mdui-dialog-close>好的</button>
+                </div>
+            </div>
         <!-- 卡片的按钮 -->
         <div class="mdui-card-actions">
             <button class="mdui-btn mdui-ripple" onclick="ipcRenderer.send('open-url','https://github.com/Yunmoan/school-clock')" >Github 源代码地址</button>
@@ -102,6 +118,7 @@
                 "countdown-intro":"",
                 "video-volume": 0.3,
                 "countdowntext": '请在设置中编辑此卡片，标记ID：#2，若启用通用倒计时则不会显示此卡片。也可在设置中将其清空。',
+                "weather-code": document.getElementById('weather-code').value,
                 "text-1": '请在设置中编辑此卡片，标记ID：#1，若启用高考模式则不会显示此卡片。也可在设置中将其清空。'
             };
             ipcRenderer.send('config-saved', newConfig);
@@ -122,8 +139,16 @@
             statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常 | 200 OK' : '无法访问API';
 
         }
+        async function checkWeatherAPIStatus() {
+
+            const statusElement = document.getElementById('weatherapiStatus');
+            statusElement.textContent = '正在检查...';
+            const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://www.haotechs.cn/ljh-wx/weather');
+            statusElement.textContent = isAPIAccessible ? 'haotechs 高德地图天气 API 正常' : '无法访问高德地图天气 API';
+        }
         updateNetworkStatus();
         checkAPIStatus();
+        checkWeatherAPIStatus();
     </script>
 </body>
 </html>

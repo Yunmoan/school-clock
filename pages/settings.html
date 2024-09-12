@@ -48,6 +48,27 @@
             </select>
         </div>
         <div class="mdui-textfield">
+            <input id="weather-code" type="text" class="mdui-textfield-input" placeholder="高德地图天气编码"/>
+            <div class="mdui-textfield-helper">高德地图天气接口编码。如：北京市：110000，唐山市：130200</div>
+            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-2'}"
+                   >查询天气代码
+            </button>
+        </div>
+        <div class="mdui-textfield">
+            <select class="mdui-select">
+                <option value="1" selected>State 1</option>
+                <option value="2">State 2</option>
+                <option value="3">State 3</option>
+                <option value="4">State 4</option>
+                <option value="5">State 5</option>
+                <option value="6">State 6</option>
+            </select>
+            <div class="mdui-textfield-helper">高德地图天气接口编码。如：北京市：110000，唐山市：130200</div>
+            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-2'}"
+            >查询天气代码
+            </button>
+        </div>
+        <div class="mdui-textfield">
 
             是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(重启生效)<br/>
             <label class="mdui-switch">
@@ -231,11 +252,12 @@
                     <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
                     <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
                     <li id="hitokotoapiStatus" class="mdui-list-item mdui-ripple">...</li>
+                    <li id="weatherapiStatus" class="mdui-list-item mdui-ripple">...</li>
                 </ul>
             </div>
             <!-- 卡片的按钮 -->
             <div class="mdui-card-actions">
-                <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();">重新检测</button>
+                <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();checkHitokotAPIStatus();checkWeatherAPIStatus()">重新检测</button>
             </div>
         </div>
         <div class="mdui-card" style="margin-top: 8px">
@@ -270,7 +292,7 @@
                     <img class="mdui-card-header-avatar"
                          src="data:image/jpeg;base64,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"/>
                     <div class="mdui-card-header-title">Enjie Ye</div>
-                    <div class="mdui-card-header-subtitle">贡献者</div>
+                    <div class="mdui-card-header-subtitle">代码贡献者</div>
                 </div>
             </div>
             <div class="mdui-card-primary">
@@ -301,6 +323,16 @@
         * 注意：WPS 导出的视频大概率是 webm 格式，需要上传到 WEBM 上传卡片，将会自动转换为MP4并保存在 /data/play.mp4<br/>
         最佳建议是在转换后再上传以便节约性能，可使用此工具: https://cdkm.com/cn/webm-to-mp4 <br/>
         <img src="assets/wpshelp.png" width="450" height="auto"/>
+    </div>
+    <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close>好的</button>
+    </div>
+</div>
+
+<div class="mdui-dialog" id="example-2">
+    <div class="mdui-dialog-content">
+        <div class="mdui-dialog-title">高德地图天气接口地区编码</div>
+        <iframe src="assets/weather_codes.html" width="100%" height="500" frameborder="0"></iframe>
     </div>
     <div class="mdui-dialog-actions">
         <button class="mdui-btn mdui-ripple" mdui-dialog-close>好的</button>
@@ -338,6 +370,7 @@
             document.getElementById('background-image-name').innerText = '已经上传的文件名:' + config['background-image'];
             document.getElementById('video-volume').value = config['video-volume'];
             document.getElementById('countdowntext').value = config['countdowntext'];
+            document.getElementById('weather-code').value = config['weather-code'];
             document.getElementById('text-1').value = config['text-1']
             mdui.updateSliders();
         });
@@ -416,6 +449,7 @@
                 "background-image": document.getElementById('background').value.split('\\').pop(),  // 获取文件名
                 "video-volume": document.getElementById('video-volume').value,
                 "countdowntext": document.getElementById('countdowntext').value,
+                "weather-code": document.getElementById('weather-code').value,
                 "text-1": document.getElementById('text-1').value,
             };
 
@@ -461,6 +495,7 @@
             "background-image": document.getElementById('background').value.split('\\').pop(),
             "video-volume": document.getElementById('video-volume').value,
             "countdowntext": document.getElementById('countdowntext').value,
+            "weather-code": document.getElementById('weather-code').value,
             "text-1": document.getElementById('text-1').value,
         };
         ipcRenderer.send('config-saved-settings', newConfig);
@@ -586,11 +621,21 @@
         statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '无法访问 Hitokoto API';
     }
 
+    async function checkWeatherAPIStatus() {
+
+        const statusElement = document.getElementById('weatherapiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://www.haotechs.cn/ljh-wx/weather');
+        statusElement.textContent = isAPIAccessible ? 'haotechs 高德地图天气 API 正常' : '无法访问高德地图天气 API';
+    }
+
+
     // Initial checks
     checkHitokotAPIStatus();
     updateNetworkStatus();
     checkAPIStatus();
     displaySystemInfo();
+    checkWeatherAPIStatus();
 </script>
 </body>
 </html>

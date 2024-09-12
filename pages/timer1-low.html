@@ -42,7 +42,7 @@
 
                 <div class="mdui-card-content" style="text-align: left;padding: 11px">
                     <span id="weather-content"
-                         style="font-family: Roboto;width:100%;font-size: 25px;line-height:32px"></span>
+                         style="font-family: Roboto;width:100%;font-size: 19px;line-height:28px"></span>
                 </div>
             </div>
             <div class="mdui-card" id="textbox-1" style="margin-bottom: 8px">
@@ -60,15 +60,15 @@
             <div class="mdui-card mdui-shadow-0" style="margin-top: 8px;background: rgb(255,255,255,0.1);backdrop-filter: blur(20px)">
                 <div style="text-align: center;margin: 8px 0 8px 0;">
                     <h1 id="time-container"></h1>
-                    <h3 id="hitokoto">一言载入中...</h3>
+                    <span style="font-size: 18px;" id="hitokoto">一言载入中...</span>
                 </div>
             </div>
             <div class="mdui-card" id="gaokao-countdown-container" style="margin-top: 8px">
                 <div class="mdui-card-media">
-                    <img src="assets/gaokaojiayou.jpg" height="140" width="auto"/>
+                    <img src="assets/gaokaojiayou.jpg" height="100" width="auto"/>
                     <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
                         <div class="mdui-card-primary">
-                            <div id="gaokao-countdown"></div>
+                            <div id="gaokao-countdown" style="padding-top: 18px"></div>
                         </div>
                     </div>
                 </div>
@@ -79,13 +79,13 @@
                          style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
                 </div>
                 <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container">
-                    <h2 >距离 <span id="countdown-intro" style="font-size: 40px"></span> 还有</h2>
-                    <h1 style="font-size:30px" id="countdown"></h1>
+                    <span style="font-size:25px">距离 <span id="countdown-intro" style="font-size: 30px"></span> 还有</span><br/>
+                    <span style="font-size:30px" id="countdown"></span>
                 </div>
             </div>
         </div>
         <div class="mdui-col-xs-8 mdui-col-sm-8">
-            <div class="mdui-card" style="margin-bottom: 8px;height: 12vh">
+            <div class="mdui-card" style="margin-bottom: 8px;height: 15vh">
                 <div class="mdui-card-content" id="marquee-top" style="height: 100%;">
                 </div>
             </div>
@@ -95,7 +95,7 @@
                     播放异常，请联系管理员
                 </video>
             </div>
-            <div class="mdui-card" style="margin-top: 8px;height: 12vh">
+            <div class="mdui-card" style="margin-top: 8px;height: 15vh">
                 <div class="mdui-card-content" id="marquee-bottom" style="height: 100%;">
                 </div>
             </div>
@@ -113,7 +113,7 @@
         onclick="ipcRenderer.send('close-window','timerWindow');ipcRenderer.send('open-window','index.html', 'mainWindow', { width: 900, height: 600 })">
     <i class="mdui-icon material-icons">exit_to_app</i>
 </button>
-<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:14px;color:rgb(254,254,254,0.5)"><br/>Author：云默安 | Copyright &copy; 2024 ZGIT | GPL
+<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:10px;color:rgb(254,254,254,0.5)"><br/>Author：云默安 | Copyright &copy; 2024 ZGIT | GPL
     3.0 license | 机构: <span id="company"></span> | * 天气数据来自高德地图接口，数据仅供参考。</div>
 
 <script>
@@ -246,7 +246,7 @@
                 const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
                 this.container.innerHTML = `
-                <h1 style=";color: #ffffff">距离 <span style="font-size: 42px">${gaokaoyear}高考</span> 还有 <br/><span style="color: rgb(246,188,113);font-size: 42px"> ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒</span></h1>`;
+                <span style="font-size:30px;color: #ffffff">距离 <span style="font-size: 38px">${gaokaoyear}高考</span> 还有 <br/><span style="color: rgb(246,188,113);font-size: 30px"> ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒</span></span>`;
             } else if (now >= targetDate && now <= endDate) {
                 this.container.innerHTML = `<h1>同学们，高考加油！</h1>`;
             } else {
@@ -469,8 +469,8 @@
     const timeDisplay = new TimeDisplay('time-container');
 
     const canvas = document.getElementById('clock');
-    canvas.width = document.documentElement.clientWidth * 0.21;
-    canvas.height = document.documentElement.clientWidth * 0.21;
+    canvas.width = document.documentElement.clientWidth * 0.15;
+    canvas.height = document.documentElement.clientWidth * 0.15;
     const ctx = canvas.getContext('2d');
     const radius = canvas.width / 2;
     ctx.translate(radius, radius);

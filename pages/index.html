@@ -63,18 +63,26 @@
                     <ul class="mdui-list">
                         <li id="networkStatus" class="mdui-list-item mdui-ripple">正在检测网络状态...</li>
                         <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
+                        <li id="weatherapiStatus" class="mdui-list-item mdui-ripple">...</li>
+                        <li id="hitokotoapiStatus" class="mdui-list-item mdui-ripple">...</li>
                     </ul>
                 </div>
                 <!-- 卡片的按钮 -->
                 <div class="mdui-card-actions">
-                    <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();">重新检测</button>
+                    <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();checkWeatherAPIStatus()">重新检测</button>
                 </div>
             </div><br/>
 
 
         </div>
         <div class="mdui-col-xs-6 mdui-col-sm-4">
-            <div class="mdui-card">
+            <div class="mdui-card" style="">
+                <!-- 卡片的内容 -->
+                <div class="mdui-card-content">
+                    <span id="weather"></span>
+                </div>
+            </div>
+            <div class="mdui-card" style="margin-top: 8px">
                 <!-- 卡片的内容 -->
                 <div class="mdui-card-content">
                     <span id="hitokoto"></span>
@@ -95,7 +103,7 @@
                     <button class="mdui-btn mdui-btn-block mdui-ripple"
                             onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
                     </button>
-                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4"
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4" style="height: 100px"
                             onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')">
                         <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
                     </button>
@@ -226,6 +234,71 @@
         }
     }
 
+    async function fetchWeather(adcode) {
+        try {
+            const response = await fetch(`https://www.haotechs.cn/ljh-wx/weather?adcode=${adcode}`); // 替换为你的API URL
+            const data = await response.json(); // 解析为JSON
+            if (data.success && data.result) {
+                return data;
+            } else {
+                console.error('获取天气信息失败:', data.message);
+                return null;
+            }
+        } catch (error) {
+            console.error('请求出错:', error);
+            return null;
+        }
+    }
+    // fetchWeatherThree(110000);
+    async function fetchWeatherThree(adcode) {
+        try {
+            // 使用 fetch 获取本地 JSON 文件
+            const response = await fetch('assets/weather_codes.json');
+            const jsonData = await response.json(); // 解析为 JSON 对象
+
+            // 将 adcode 转为字符串进行匹配
+            const adcodeStr = String(adcode);
+
+            // 查找与 adcode 匹配的天气信息
+            const weatherData = jsonData.find(item => String(item.adcode) === adcodeStr);
+            if (weatherData) {
+                console.log(`Location: ${weatherData.location}`);
+                const response = await fetch(`https://api.52vmy.cn/api/query/tian/three?city=${weatherData.location}`); // 替换为你的API URL
+                    const data = await response.json(); // 解析为JSON
+                    if (data.code && data.data) {
+                        return data;
+                    } else {
+                        console.error('获取近三天天气信息失败:', data.msg);
+                        return null;
+                    }
+
+
+            } else {
+                console.error('未找到对应的天气编码');
+                return null;
+            }
+
+        } catch (error) {
+            console.error('请求出错:', error);
+            return null;
+        }
+
+
+    // try {
+        //     const response = await fetch(`https://www.haotechs.cn/ljh-wx/weather?adcode=${adcode}`); // 替换为你的API URL
+        //     const data = await response.json(); // 解析为JSON
+        //     if (data.success && data.result) {
+        //         return data;
+        //     } else {
+        //         console.error('获取天气信息失败:', data.message);
+        //         return null;
+        //     }
+        // } catch (error) {
+        //     console.error('请求出错:', error);
+        //     return null;
+        // }
+    }
+
     // 页面加载时从主进程获取配置并填充表单
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
@@ -279,6 +352,44 @@
                 document.getElementById('hitokoto').style.display = 'none';
             }
 
+            if (config['weather-code']) {
+                document.getElementById('weather').innerText = "正在检查天气..."
+                const updateWeather = async () => {
+                    console.log(config['weather-code'])
+                    try {
+                        // 并发请求，提高效率
+                        const [data, threedata] = await Promise.all([
+                            fetchWeather(config['weather-code']),
+                            fetchWeatherThree(config['weather-code'])
+                        ]);
+
+                        // 检查数据的有效性
+                        if (data && data.result && threedata && threedata.data && threedata.data.data) {
+                            // 更新天气信息到页面
+                            const city = data.result.city;
+                            const weather = `${data.result.weather} ${data.result.temperature} °C | 空气质量：${ threedata.data.data[2].air_quality } \n 湿度：${data.result.humidity}% | 风力：${threedata.data.data[1].bearing}`;
+                            const tomorrowTemp = threedata.data.data[2].temperature; // 明日天气温度
+                            const tomorrowWeather = threedata.data.data[2].weather;
+                            const tomorrowWind = threedata.data.data[2].bearing;
+                            const tomorrowAQI = threedata.data.data[2].air_quality;
+
+                            document.getElementById('weather').innerText = `${city} | ${weather} \n明日: ${tomorrowWeather} | ${tomorrowTemp} \n空气质量：${tomorrowWind} | 风力 ${tomorrowAQI}`;
+                        }
+                    } catch (error) {
+                        console.error("Error fetching weather data:", error);
+                    }
+                };
+
+                // 初次加载时立即调用
+                updateWeather();
+
+                // 设置定时任务，每5分钟刷新一次
+                setInterval(updateWeather, 300000); // 每5分钟刷新一次
+            } else {
+                // 如果没有天气编码，隐藏天气信息
+                document.getElementById('weather').style.display = 'none';
+            }
+
             document.getElementById('username').innerText = config["user-name"];
 
         });
@@ -303,6 +414,23 @@
         statusElement.textContent = isAPIAccessible ? 'ZGIT OpenAPI 服务状态正常' : '无法访问API';
     }
 
+    async function checkWeatherAPIStatus() {
+
+        const statusElement = document.getElementById('weatherapiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://www.haotechs.cn/ljh-wx/weather');
+        statusElement.textContent = isAPIAccessible ? 'haotechs 高德地图天气 API 正常' : '无法访问高德地图天气 API';
+    }
+    async function checkHitokotAPIStatus() {
+
+        const statusElement = document.getElementById('hitokotoapiStatus');
+        statusElement.textContent = '正在检查...';
+        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
+        statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '暂时无法访问 Hitokoto API';
+    }
+
+    checkHitokotAPIStatus()
+    checkWeatherAPIStatus()
 
 </script>
 </body>
