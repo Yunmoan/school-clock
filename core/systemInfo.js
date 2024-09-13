@@ -1,9 +1,16 @@
 const os = require('os');
 const axios = require('axios');
-
+const sudo = require('sudo-prompt'); // 新增
 let networkCurrentTime = null;
 let networkTime = false;
 let timeServer = 'https://api.zyghit.cn/time-aligned?type=unix'; // 使用的时间服务接口
+
+
+const { exec } = require('child_process');
+const options = {
+    name: 'SchoolClock'
+};
+
 
 
 // 通过HTTP GET请求同步网络时间的函数
@@ -37,6 +44,44 @@ function initializeTimeSync(config) {
     }
 }
 
+function initializeNTPTimeSync(config) {
+    const ntpServer = config.ntpServer || 'pool.ntp.org'; // 默认 NTP 服务器
+
+    if (process.platform === 'win32') {
+        // Windows 系统时间同步
+        const command = `w32tm /config /manualpeerlist:"${ntpServer}" /syncfromflags:manual /reliable:YES /update && w32tm /resync`;
+        sudo.exec(command, options, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Windows NTP Time synchronization failed: ${error}`);
+                return;
+            }
+            console.log('Windows Time synchronization successful:', stdout);
+        });
+    } else if (process.platform === 'linux') {
+        // Linux 系统时间同步
+        const command = `timedatectl set-ntp true && ntpdate ${ntpServer}`;
+        sudo.exec(command, options, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Linux NTP Time synchronization failed: ${error}`);
+                return;
+            }
+            console.log('Linux Time synchronization successful:', stdout);
+        });
+    } else if (process.platform === 'darwin') {
+        // macOS 系统时间同步
+        const command = `sntp -sS ${ntpServer}`;
+        sudo.exec(command, options, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`macOS NTP Time synchronization failed: ${error}`);
+                return;
+            }
+            console.log('macOS Time synchronization successful:', stdout);
+        });
+    } else {
+        console.log('Unsupported operating system');
+    }
+}
+
 function getSystemInfo() {
     let currentTime = networkCurrentTime ? networkCurrentTime.toLocaleString() : new Date().toLocaleString();
     let timeStatus = networkCurrentTime ? 'Network' : 'Local';
@@ -57,4 +102,4 @@ function getSystemInfo() {
     };
 }
 
-module.exports = { getSystemInfo, initializeTimeSync };
+module.exports = { getSystemInfo, initializeTimeSync,initializeNTPTimeSync };

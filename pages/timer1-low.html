@@ -113,11 +113,15 @@
         onclick="ipcRenderer.send('close-window','timerWindow');ipcRenderer.send('open-window','index.html', 'mainWindow', { width: 900, height: 600 })">
     <i class="mdui-icon material-icons">exit_to_app</i>
 </button>
-<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:10px;color:rgb(254,254,254,0.5)"><br/>Author：云默安 | Copyright &copy; 2024 ZGIT | GPL
-    3.0 license | 机构: <span id="company"></span> | * 天气数据来自高德地图接口，数据仅供参考。</div>
+<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:12px;color:rgb(50,50,50,0.5)"><br/>Author：云默安 | Copyright &copy; 2024 ZGIT | GPL
+    3.0 license | 机构: <span id="company"></span> | <span id="app-version"></span>(低分辨率模式) | * 天气数据来自高德地图接口，数据仅供参考。</div>
 
 <script>
     const {ipcRenderer} = require('electron');
+    // 获取版本号并显示在页面上
+    ipcRenderer.invoke('get-app-version').then((version) => {
+        document.getElementById('app-version').innerText = version;
+    });
 
     mdui.snackbar('正在初始化...', { timeout: 500,position: 'right-bottom' })
     const music = new Audio('assets/startup.mp3');
@@ -339,28 +343,36 @@
                 document.getElementById('hitokoto').style.display = 'none';
             }
             if (config['weather-code']) {
-                document.getElementById('weather-content').innerText = "正在检查天气..."
+                document.getElementById('weather-content').innerText = "正在检查天气...";
+
+                let weatherData = {
+                    today: '',
+                    tomorrow: ''
+                };
+                let showTodayWeather = true;
+
+                // 定义更新天气数据的函数
                 const updateWeather = async () => {
-                    mdui.snackbar('计划任务：正在刷新天气数据', { timeout: 500,position: 'right-bottom' })
-                    console.log(config['weather-code'])
+                    mdui.snackbar('计划任务：正在刷新天气数据', { timeout: 500, position: 'right-bottom' });
                     try {
-                        // 并发请求，提高效率
+                        // 并发请求天气数据
                         const [data, threedata] = await Promise.all([
                             fetchWeather(config['weather-code']),
                             fetchWeatherThree(config['weather-code'])
                         ]);
 
-                        // 检查数据的有效性
                         if (data && data.result && threedata && threedata.data && threedata.data.data) {
-                            // 更新天气信息到页面
                             const city = data.result.city;
                             const weather = `${data.result.weather} ${data.result.temperature} °C ${threedata.data.data[2].air_quality} ${threedata.data.data[1].bearing} | 湿度：${data.result.humidity}%`;
-                            const tomorrowTemp = threedata.data.data[2].temperature; // 明日天气温度
+                            const tomorrowTemp = threedata.data.data[2].temperature;
                             const tomorrowWeather = threedata.data.data[2].weather;
                             const tomorrowWind = threedata.data.data[2].bearing;
                             const tomorrowAQI = threedata.data.data[2].air_quality;
-                            mdui.snackbar('天气数据更新成功', { timeout: 1000,position: 'right-bottom' })
-                            document.getElementById('weather-content').innerText = `${city} | ${weather} \n明日天气: ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}  `;
+
+                            weatherData.today = `<span style="font-size:28px;">${city}</span> 天气<br/>今日 ${weather}`;
+                            weatherData.tomorrow = `<span style="font-size:28px;">${city}</span> 天气<br/>明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
+                            toggleWeatherDisplay();
+                            mdui.snackbar('天气数据更新成功', { timeout: 1000, position: 'right-bottom' });
                         }
                     } catch (error) {
                         console.error("Error fetching weather data:", error);
@@ -370,10 +382,22 @@
                 // 初次加载时立即调用
                 updateWeather();
 
-                // 设置定时任务，每5分钟刷新一次
-                setInterval(updateWeather, 300000); // 每5分钟刷新一次
+                // 设置定时任务，每5分钟刷新一次天气数据
+                setInterval(updateWeather, 300000);
+
+                // 切换显示今日和明日天气
+                const toggleWeatherDisplay = () => {
+                    if (showTodayWeather) {
+                        document.getElementById('weather-content').innerHTML = weatherData.today;
+                    } else {
+                        document.getElementById('weather-content').innerHTML = weatherData.tomorrow;
+                    }
+                    showTodayWeather = !showTodayWeather;
+                };
+
+                // 每2分钟切换显示今日或明日天气
+                setInterval(toggleWeatherDisplay, 10000); // 每2分钟切换一次
             } else {
-                // 如果没有天气编码，隐藏天气信息
                 document.getElementById('weather').style.display = 'none';
             }
 
@@ -609,6 +633,8 @@
         () => updateNetworkStatus()
         , 600000)
     updateNetworkStatus();
+
+
     fetchConfigAndStartClock();
 </script>
 </body>

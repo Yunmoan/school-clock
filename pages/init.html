@@ -17,7 +17,7 @@
         <li id="apiStatus" class="mdui-list-item mdui-ripple">...</li>
         <li id="weatherapiStatus" class="mdui-list-item mdui-ripple">...</li>
     </ul>
-        <form id="configForm">
+
             <div class="mdui-textfield">
                 <input id="appName" type="text" class="mdui-textfield-input" placeholder="应用名称" />
                 <div class="mdui-textfield-helper">比如：XX中学走廊时钟</div>
@@ -33,12 +33,16 @@
                 <input id="unitCode" type="text" class="mdui-textfield-input" placeholder="单位名称"  />
                 <div class="mdui-textfield-helper">显示的相关单位</div>
             </div>
-            <div class="mdui-textfield">
+
                 选择时区 <br/>
                 <select id="timezone" class="mdui-select" disabled>
                     <option value="UTC+8" selected>UTC +8 (中国北京时间)</option>
-                </select>
-            </div>
+                </select><br/><br/>
+            选择主题：<br/>
+            <select class="mdui-select" mdui-select id="theme-select">
+                <option value="timer" selected>标准</option>
+                <option value="timer1-low">标准（低分辨率）</option>
+            </select>
             <div class="mdui-textfield">
 
                 是否启用网络时间(需要互联网)：(若禁用,则使用系统时间)(重启生效)<br/>
@@ -65,8 +69,7 @@
                 </button>
             </div>
 
-            <button class="mdui-btn mdui-btn-raised" type="submit">保存配置</button>
-        </form>
+            <button class="mdui-btn mdui-btn-raised" onclick="saveConfig()">保存配置</button>
         <div class="mdui-card"  style="margin-top: 8px">
         <!-- 卡片的内容 -->
         <div class="mdui-card-content">
@@ -95,10 +98,10 @@
         const { ipcRenderer } = require('electron');
 
         // 表单提交事件
-        document.getElementById('configForm').addEventListener('submit', (event) => {
-            event.preventDefault();
-            saveConfig();
-        });
+        // document.getElementById('configForm').addEventListener('submit', (event) => {
+        //     event.preventDefault();
+        //     saveConfig();
+        // });
         function saveConfig() {
             const newConfig = {
                 "app-name": document.getElementById('appName').value,
@@ -119,9 +122,14 @@
                 "video-volume": 0.3,
                 "countdowntext": '请在设置中编辑此卡片，标记ID：#2，若启用通用倒计时则不会显示此卡片。也可在设置中将其清空。',
                 "weather-code": document.getElementById('weather-code').value,
-                "text-1": '请在设置中编辑此卡片，标记ID：#1，若启用高考模式则不会显示此卡片。也可在设置中将其清空。'
+                "text-1": '请在设置中编辑此卡片，标记ID：#1，若启用高考模式则不会显示此卡片。也可在设置中将其清空。',
+                "ntpServer": "ntp.aliyun.com",
+                "theme": document.getElementById('theme-select').value,
+
             };
             ipcRenderer.send('config-saved', newConfig);
+            ipcRenderer.send('sync-time');
+            mdui.snackbar("正在同步系统时间")
         }
 
         async function updateNetworkStatus() {

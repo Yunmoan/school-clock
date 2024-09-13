@@ -4,8 +4,10 @@ const path = require('path');
 const configManager = require('./core/configManager');
 const { createWindow, closeWindow } = require('./core/windowManager');
 const { convertWebmToMp4, deleteFile } = require('./core/videoConverter');
-const { getSystemInfo, initializeTimeSync } = require('./core/systemInfo');
+const { getSystemInfo, initializeTimeSync,initializeNTPTimeSync } = require('./core/systemInfo');
 const { checkNetworkStatus, checkURLStatus } = require('./core/networkStatus');
+const { generateVersion } = require('./core/versionGenerator');
+const { exec } = require('child_process');
 
 // 获取用户数据目录
 const userDataDir = app.getPath('userData');
@@ -18,12 +20,26 @@ if (!fs.existsSync(dataDir)) {
 
 app.on('ready', () => {
     global.global_config = configManager.readConfig();
+    const version = generateVersion();
+    global.appVersion = version;  // 将版本号存储在全局变量中
+
+    // 输出版本号（可选）
+    console.log(`Version: ${version}`);
 
     // 初始化并同步时间
     initializeTimeSync(global.global_config);
 
+    initializeNTPTimeSync(global.global_config);
+    console.log('sync ntp time')
+
     // 配置文件路径
     const configFilePath = path.join(app.getPath('userData'), 'data', 'config.json');
+
+    ipcMain.handle('get-app-version', () => {
+        return global.appVersion;
+    });
+
+    setInterval(()=>initializeNTPTimeSync(global.global_config), 3600000);
 
     // 处理打开配置文件目录的请求
     ipcMain.on('open-config-folder', (event) => {
@@ -47,6 +63,10 @@ app.on('ready', () => {
 
     ipcMain.on('open-url', (event, url) => {
         shell.openExternal(url);
+    });
+
+    ipcMain.on('sync-time', () => {
+        initializeNTPTimeSync(global.global_config)
     });
 
     ipcMain.on('upload-webm', (event, { data }) => {

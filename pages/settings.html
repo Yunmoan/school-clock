@@ -41,12 +41,16 @@
             <input id="unitCode" type="text" class="mdui-textfield-input" placeholder="单位编码" disabled/>
             <div class="mdui-textfield-helper">由开发者提供，同步进行授权验证</div>
         </div>
-        <div class="mdui-textfield">
             选择时区 <br/>
             <select id="timezone" class="mdui-select" disabled>
                 <option value="UTC+8" selected>UTC +8 (中国北京时间)</option>
-            </select>
-        </div>
+            </select><br/><br/>
+            选择主题：<br/>
+        <select class="mdui-select" mdui-select id="theme-select">
+            <option selected>不做修改</option>
+            <option value="timer">标准</option>
+            <option value="timer1-low">标准（低分辨率）</option>
+        </select>
         <div class="mdui-textfield">
             <input id="weather-code" type="text" class="mdui-textfield-input" placeholder="高德地图天气编码"/>
             <div class="mdui-textfield-helper">高德地图天气接口编码。如：北京市：110000，唐山市：130200</div>
@@ -54,19 +58,17 @@
                    >查询天气代码
             </button>
         </div>
+
+
+
         <div class="mdui-textfield">
-            <select class="mdui-select">
-                <option value="1" selected>State 1</option>
-                <option value="2">State 2</option>
-                <option value="3">State 3</option>
-                <option value="4">State 4</option>
-                <option value="5">State 5</option>
-                <option value="6">State 6</option>
-            </select>
-            <div class="mdui-textfield-helper">高德地图天气接口编码。如：北京市：110000，唐山市：130200</div>
-            <button class="mdui-btn mdui-ripple" mdui-dialog="{target: '#example-2'}"
-            >查询天气代码
-            </button>
+
+            NTP 时间同步服务器：(请在关于页面手动同步时间)<br/>
+
+                <input class="mdui-textfield-input" id="ntp-server" type="text"/>
+
+
+
         </div>
         <div class="mdui-textfield">
 
@@ -115,7 +117,7 @@
         <div class="mdui-textfield">
             <label class="mdui-textfield-label">演示视频音量</label>
             <label class="mdui-slider mdui-slider-discrete">
-                <input type="range" step="0.1" min="0" max="1" id="video-volume"/>
+                <input type="range" step="0.01" min="0" max="1" id="video-volume"/>
             </label>
         </div>
         <div class="mdui-textfield">
@@ -221,7 +223,7 @@
 
                 </form>
                 <ul class="mdui-list">
-                    <li class="mdui-list-item mdui-ripple">版本：1.0.4</li>
+                    <li class="mdui-list-item mdui-ripple">版本：<span id="app-version"></span></li>
                     <li class="mdui-list-item mdui-ripple">发行：至远光辉信息技术(Software)</li>
                     <li class="mdui-list-item mdui-ripple" id="electron-version"></li>
                     <li class="mdui-list-item mdui-ripple" id="chromium-version"></li>
@@ -237,6 +239,9 @@
                 </button>
                 <button class="mdui-btn mdui-ripple" onclick="ipcRenderer.send('open-config-folder')">
                     打开配置文件目录
+                </button>
+                <button class="mdui-btn mdui-ripple" onclick="syncTime();">
+                    同步时间
                 </button>
                 <button class="mdui-btn mdui-ripple" onclick="resetSettings()" style="color:red">
                     删除全部配置文件并重置应用
@@ -342,9 +347,19 @@
 <script>
     const {ipcRenderer} = require('electron');
 
+    // 获取版本号并显示在页面上
+    ipcRenderer.invoke('get-app-version').then((version) => {
+        document.getElementById('app-version').innerText = version;
+    });
+
     const electronVersion = process.versions.electron;
     const chromiumVersion = process.versions.chrome;
     let originalNetworkTime = null; // 用于存储最初的 network-time 状态
+
+    async function syncTime(){
+        ipcRenderer.send('sync-time');
+        mdui.snackbar("正在同步系统时间",{ timeout: 1000,position: 'right-bottom'})
+    }
 
     document.getElementById('electron-version').innerText = "Electron 版本: " + electronVersion;
     document.getElementById('chromium-version').innerText = "Chromium 内核版本" + chromiumVersion;
@@ -371,7 +386,11 @@
             document.getElementById('video-volume').value = config['video-volume'];
             document.getElementById('countdowntext').value = config['countdowntext'];
             document.getElementById('weather-code').value = config['weather-code'];
-            document.getElementById('text-1').value = config['text-1']
+            document.getElementById('text-1').value = config['text-1'];
+            document.getElementById('ntp-server').value = config['ntpServer'],
+            document.getElementById('theme-select').value = config['theme'];
+            // console.log(config['theme'])
+            // document.getElementById('theme-select').options[value=config['theme']].prop("selected",true);
             mdui.updateSliders();
         });
     };
@@ -451,6 +470,8 @@
                 "countdowntext": document.getElementById('countdowntext').value,
                 "weather-code": document.getElementById('weather-code').value,
                 "text-1": document.getElementById('text-1').value,
+                "ntpServer": document.getElementById('ntp-server').value,
+                "theme": document.getElementById('theme-select').value,
             };
 
             ipcRenderer.send('upload-background', {data, fileName: file.name, newConfig});
@@ -497,6 +518,8 @@
             "countdowntext": document.getElementById('countdowntext').value,
             "weather-code": document.getElementById('weather-code').value,
             "text-1": document.getElementById('text-1').value,
+            "ntpServer": document.getElementById('ntp-server').value,
+            "theme": document.getElementById('theme-select').value,
         };
         ipcRenderer.send('config-saved-settings', newConfig);
     }

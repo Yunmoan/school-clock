@@ -18,6 +18,7 @@
 </div>
 <div class="mdui-container">
     <h1>欢迎使用校园时钟工具</h1>
+
     <!-- 在超小屏幕设备上，第一列 100% 宽度，第二列 50% 宽度。在小屏幕及以上设备上，第一列为 66.6% 宽度，第二列为 33.3% 宽度。 -->
     <div class="mdui-row">
         <div class="mdui-col-xs-12 mdui-col-sm-8">
@@ -72,7 +73,7 @@
                     <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();checkWeatherAPIStatus()">重新检测</button>
                 </div>
             </div><br/>
-
+            <span id="app-version"></span><br/>
 
         </div>
         <div class="mdui-col-xs-6 mdui-col-sm-4">
@@ -103,19 +104,23 @@
                     <button class="mdui-btn mdui-btn-block mdui-ripple"
                             onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
                     </button>
-                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4" style="height: 100px"
-                            onclick="ipcRenderer.send('open-window','timer.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')">
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4" style="height: 100px;font-size:20px"
+                            onclick="startClockWindow()">
                         <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
                     </button>
                 </div>
 
             </div>
         </div>
+
     </div>
 </div>
 <script>
     const {ipcRenderer} = require('electron');
     const moment = require('moment');
+
+
+    let theme = 'timer.html';
 
     // 倒计时类
     class Countdown {
@@ -304,6 +309,7 @@
         ipcRenderer.invoke('get-config').then((config) => {
 
             timeFormat = config['time-format'];
+            theme = config['theme'];
             // Initial checks
 
             updateNetworkStatus();
@@ -353,27 +359,36 @@
             }
 
             if (config['weather-code']) {
-                document.getElementById('weather').innerText = "正在检查天气..."
+                document.getElementById('weather').innerText = "正在检查天气...";
+
+                let weatherData = {
+                    today: '',
+                    tomorrow: ''
+                };
+                let showTodayWeather = true;
+
+                // 定义更新天气数据的函数
                 const updateWeather = async () => {
-                    console.log(config['weather-code'])
+                    mdui.snackbar('正在刷新天气数据', { timeout: 500, position: 'right-bottom' });
                     try {
-                        // 并发请求，提高效率
+                        // 并发请求天气数据
                         const [data, threedata] = await Promise.all([
                             fetchWeather(config['weather-code']),
                             fetchWeatherThree(config['weather-code'])
                         ]);
 
-                        // 检查数据的有效性
                         if (data && data.result && threedata && threedata.data && threedata.data.data) {
-                            // 更新天气信息到页面
                             const city = data.result.city;
-                            const weather = `${data.result.weather} ${data.result.temperature} °C | 空气质量：${ threedata.data.data[2].air_quality } \n 湿度：${data.result.humidity}% | 风力：${threedata.data.data[1].bearing}`;
-                            const tomorrowTemp = threedata.data.data[2].temperature; // 明日天气温度
+                            const weather = `${data.result.weather} ${data.result.temperature} °C ${threedata.data.data[2].air_quality} ${threedata.data.data[1].bearing} | 湿度：${data.result.humidity}%`;
+                            const tomorrowTemp = threedata.data.data[2].temperature;
                             const tomorrowWeather = threedata.data.data[2].weather;
                             const tomorrowWind = threedata.data.data[2].bearing;
                             const tomorrowAQI = threedata.data.data[2].air_quality;
 
-                            document.getElementById('weather').innerText = `${city} | ${weather} \n明日: ${tomorrowWeather} | ${tomorrowTemp} \n空气质量：${tomorrowWind} | 风力 ${tomorrowAQI}`;
+                            weatherData.today = `<span style="font-size:33px;">${city}</span> 今日 ${weather}`;
+                            weatherData.tomorrow = `<span style="font-size:33px;">${city}</span> 明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
+                            toggleWeatherDisplay();
+                            mdui.snackbar('天气数据更新成功', { timeout: 1000, position: 'right-bottom' });
                         }
                     } catch (error) {
                         console.error("Error fetching weather data:", error);
@@ -383,10 +398,22 @@
                 // 初次加载时立即调用
                 updateWeather();
 
-                // 设置定时任务，每5分钟刷新一次
-                setInterval(updateWeather, 300000); // 每5分钟刷新一次
+                // 设置定时任务，每5分钟刷新一次天气数据
+                setInterval(updateWeather, 300000);
+
+                // 切换显示今日和明日天气
+                const toggleWeatherDisplay = () => {
+                    if (showTodayWeather) {
+                        document.getElementById('weather').innerHTML = weatherData.today;
+                    } else {
+                        document.getElementById('weather').innerHTML = weatherData.tomorrow;
+                    }
+                    showTodayWeather = !showTodayWeather;
+                };
+
+                // 每2分钟切换显示今日或明日天气
+                setInterval(toggleWeatherDisplay, 10000); // 每2分钟切换一次
             } else {
-                // 如果没有天气编码，隐藏天气信息
                 document.getElementById('weather').style.display = 'none';
             }
 
@@ -397,6 +424,11 @@
 
     document.getElementById('settings-button').addEventListener('click', () => {
         ipcRenderer.send('open-settings');
+    });
+
+    // 获取版本号并显示在页面上
+    ipcRenderer.invoke('get-app-version').then((version) => {
+        document.getElementById('app-version').innerText = version;
     });
 
     async function updateNetworkStatus() {
@@ -427,6 +459,10 @@
         statusElement.textContent = '正在检查...';
         const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
         statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '暂时无法访问 Hitokoto API';
+    }
+
+    function startClockWindow (){
+        ipcRenderer.send('open-window', theme+'.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')
     }
 
     checkHitokotAPIStatus()
