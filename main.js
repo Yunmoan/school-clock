@@ -39,7 +39,7 @@ app.on('ready', () => {
         return global.appVersion;
     });
 
-    setInterval(()=>initializeNTPTimeSync(global.global_config), 3600000);
+
 
     // 处理打开配置文件目录的请求
     ipcMain.on('open-config-folder', (event) => {
