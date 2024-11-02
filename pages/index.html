@@ -49,9 +49,10 @@
             <div class="mdui-card" style="margin-top: 8px">
                 #2
                 <div class="mdui-card-content" style="text-align: center;padding: 15px" id="textbox-2">
-                    <pre id="textbox-2-content" style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
+                    <pre id="textbox-2-content"
+                         style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
                 </div>
-                <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container" >
+                <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container">
                     <h2>距离 <span id="countdown-intro" style="font-size: 25px"></span> 还有</h2>
                     <h1 id="countdown"></h1>
                 </div>
@@ -70,9 +71,12 @@
                 </div>
                 <!-- 卡片的按钮 -->
                 <div class="mdui-card-actions">
-                    <button class="mdui-btn mdui-ripple" onclick="updateNetworkStatus();checkAPIStatus();checkWeatherAPIStatus()">重新检测</button>
+                    <button class="mdui-btn mdui-ripple"
+                            onclick="updateNetworkStatus();checkAPIStatus();checkWeatherAPIStatus()">重新检测
+                    </button>
                 </div>
-            </div><br/>
+            </div>
+            <br/>
             <span id="app-version"></span><br/>
 
         </div>
@@ -102,9 +106,11 @@
                     </button>
 
                     <button class="mdui-btn mdui-btn-block mdui-ripple"
-                            onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i class="mdui-icon material-icons">update</i> 检查更新
+                            onclick="mdui.snackbar('还没做,将在后续版本实现,请手动更新')"><i
+                            class="mdui-icon material-icons">update</i> 检查更新
                     </button>
-                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4" style="height: 100px;font-size:20px"
+                    <button class="mdui-btn mdui-btn-block  mdui-color-theme-accent mdui-ripple mdui-shadow-4"
+                            style="height: 100px;font-size:20px"
                             onclick="startClockWindow()">
                         <i class="mdui-icon material-icons">launch</i> 启动主功能窗口
                     </button>
@@ -199,7 +205,7 @@
             this.startCountdown(targetDate, endDate, gaokaoyear);
         }
 
-        updateCountdown(targetDate, endDate,gaokaoyear) {
+        updateCountdown(targetDate, endDate, gaokaoyear) {
             const now = new Date();
             const timeDiff = targetDate - now;
 
@@ -219,9 +225,9 @@
             }
         }
 
-        startCountdown(targetDate, endDate,gaokaoyear) {
+        startCountdown(targetDate, endDate, gaokaoyear) {
             setInterval(() => {
-                this.updateCountdown(targetDate, endDate,gaokaoyear);
+                this.updateCountdown(targetDate, endDate, gaokaoyear);
             }, 1000);
         }
     }
@@ -254,6 +260,7 @@
             return null;
         }
     }
+
     // fetchWeatherThree(110000);
     async function fetchWeatherThree(adcode) {
         try {
@@ -269,13 +276,13 @@
             if (weatherData) {
                 console.log(`Location: ${weatherData.location}`);
                 const response = await fetch(`https://api.52vmy.cn/api/query/tian/three?city=${weatherData.location}`); // 替换为你的API URL
-                    const data = await response.json(); // 解析为JSON
-                    if (data.code && data.data) {
-                        return data;
-                    } else {
-                        console.error('获取近三天天气信息失败:', data.msg);
-                        return null;
-                    }
+                const data = await response.json(); // 解析为JSON
+                if (data.code && data.data) {
+                    return data;
+                } else {
+                    console.error('获取近三天天气信息失败:', data.msg);
+                    return null;
+                }
 
 
             } else {
@@ -289,7 +296,7 @@
         }
 
 
-    // try {
+        // try {
         //     const response = await fetch(`https://www.haotechs.cn/ljh-wx/weather?adcode=${adcode}`); // 替换为你的API URL
         //     const data = await response.json(); // 解析为JSON
         //     if (data.success && data.result) {
@@ -304,6 +311,7 @@
         // }
     }
 
+    let useHitokotoLocal = false;
     // 页面加载时从主进程获取配置并填充表单
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
@@ -312,8 +320,10 @@
             theme = config['theme'];
             // Initial checks
 
+
             updateNetworkStatus();
             checkAPIStatus();
+
             if (config['UseCountdown']) {
                 // 初始化倒计时组件
                 const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
@@ -321,7 +331,7 @@
                 const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
                 document.getElementById('textbox-2').style.display = 'none';
             } else {
-                if(config['countdowntext']){
+                if (config['countdowntext']) {
                     document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                 } else {
                     document.getElementById('textbox-2').style.display = 'none';
@@ -334,7 +344,7 @@
                 const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
                 document.getElementById('textbox-1').style.display = 'none';
             } else {
-                if(config['text-1']){
+                if (config['text-1']) {
                     document.getElementById('textbox-1-content').innerText = config['text-1'];
                 } else {
                     document.getElementById('textbox-1').style.display = 'none';
@@ -343,17 +353,31 @@
             }
 
             if (config['hitokoto']) {
-                setInterval(async () => {
-                    const data = await fetchHitokoto();
-                    if (data) {
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
-                    }
-                }, 300000); // 300000 毫秒 = 5 分钟
-                fetchHitokoto().then(data => {
-                    if (data) {
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
-                    }
-                });
+                if (config['useHitokotoLocal']) {
+                    setInterval(async () => {
+                        const data = await ipcRenderer.invoke('get-local-hitokoto');
+                        if (data) {
+                            document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                        }
+                    }, 10000); // 300000 毫秒 = 5 分钟
+                    ipcRenderer.invoke('get-local-hitokoto').then(data => {
+                        if (data) {
+                            document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                        }
+                    });
+                } else {
+                    setInterval(async () => {
+                        const data = await fetchHitokoto();
+                        if (data) {
+                            document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                        }
+                    }, 300000); // 300000 毫秒 = 5 分钟
+                    fetchHitokoto().then(data => {
+                        if (data) {
+                            document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                        }
+                    });
+                }
             } else {
                 document.getElementById('hitokoto').style.display = 'none';
             }
@@ -369,7 +393,7 @@
 
                 // 定义更新天气数据的函数
                 const updateWeather = async () => {
-                    mdui.snackbar('正在刷新天气数据', { timeout: 500, position: 'right-bottom' });
+                    mdui.snackbar('正在刷新天气数据', {timeout: 500, position: 'right-bottom'});
                     try {
                         // 并发请求天气数据
                         const [data, threedata] = await Promise.all([
@@ -388,9 +412,11 @@
                             weatherData.today = `<span style="font-size:33px;">${city}</span> 今日 ${weather}`;
                             weatherData.tomorrow = `<span style="font-size:33px;">${city}</span> 明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
                             toggleWeatherDisplay();
-                            mdui.snackbar('天气数据更新成功', { timeout: 1000, position: 'right-bottom' });
+                            mdui.snackbar('天气数据更新成功', {timeout: 1000, position: 'right-bottom'});
                         }
                     } catch (error) {
+                        weatherData.today = `获取天气信息失败：` + error;
+                        weatherData.tomorrow = `获取天气信息失败：` + error;
                         console.error("Error fetching weather data:", error);
                     }
                 };
@@ -418,12 +444,18 @@
             }
 
             document.getElementById('username').innerText = config["user-name"];
+            if (config['useHitokotoLocal']) {
+                mdui.snackbar('正在使用 Hitokoto 本地词库', {timeout: 1000, position: 'right-bottom'});
+
+                document.getElementById('hitokotoapiStatus').textContent = '正在使用 Hitokoto 本地词库';
+            }
 
         });
     };
 
     document.getElementById('settings-button').addEventListener('click', () => {
         ipcRenderer.send('open-settings');
+        ipcRenderer.send('close-window', 'mainWindow')
     });
 
     // 获取版本号并显示在页面上
@@ -453,16 +485,21 @@
         const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://www.haotechs.cn/ljh-wx/weather');
         statusElement.textContent = isAPIAccessible ? 'haotechs 高德地图天气 API 正常' : '无法访问高德地图天气 API';
     }
-    async function checkHitokotAPIStatus() {
 
+    async function checkHitokotAPIStatus() {
         const statusElement = document.getElementById('hitokotoapiStatus');
-        statusElement.textContent = '正在检查...';
-        const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
-        statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '暂时无法访问 Hitokoto API';
+        if (useHitokotoLocal) {
+            statusElement.textContent = '正在使用 Hitokoto 本地词库';
+        } else {
+            statusElement.textContent = '正在检查...';
+            const isAPIAccessible = await ipcRenderer.invoke('check-url-status', 'https://v1.hitokoto.cn/');
+            statusElement.textContent = isAPIAccessible ? 'Hitokoto 一言 API 正常' : '暂时无法访问 Hitokoto API';
+        }
     }
 
-    function startClockWindow (){
-        ipcRenderer.send('open-window', theme+'.html', 'timerWindow', { fullscreen: true });ipcRenderer.send('close-window','mainWindow')
+    function startClockWindow() {
+        ipcRenderer.send('open-window', theme + '.html', 'timerWindow', {fullscreen: true});
+        ipcRenderer.send('close-window', 'mainWindow')
     }
 
     checkHitokotAPIStatus()

@@ -125,6 +125,7 @@
                 "text-1": '请在设置中编辑此卡片，标记ID：#1，若启用高考模式则不会显示此卡片。也可在设置中将其清空。',
                 "ntpServer": "ntp.aliyun.com",
                 "theme": document.getElementById('theme-select').value,
+                "useHitokotoLocal": false,
 
             };
             ipcRenderer.send('config-saved', newConfig);

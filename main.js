@@ -8,6 +8,7 @@ const { getSystemInfo, initializeTimeSync,initializeNTPTimeSync } = require('./c
 const { checkNetworkStatus, checkURLStatus } = require('./core/networkStatus');
 const { generateVersion } = require('./core/versionGenerator');
 const { exec } = require('child_process');
+const hitokotoFilePath = path.join(__dirname, 'pages', 'hitokoto', 'localSentences.json');
 
 // 获取用户数据目录
 const userDataDir = app.getPath('userData');
@@ -105,6 +106,22 @@ app.on('ready', () => {
         });
     });
 
+    ipcMain.handle('get-local-hitokoto', async () => {
+        try {
+            const fileContent = fs.readFileSync(hitokotoFilePath, 'utf-8');
+            const { data } = JSON.parse(fileContent);
+
+            if (Array.isArray(data) && data.length > 0) {
+                return data[Math.floor(Math.random() * data.length)];
+            } else {
+                throw new Error('No sentences available in the file.');
+            }
+        } catch (error) {
+            console.error('Error reading sentences file:', error);
+            return null;
+        }
+    });
+
     ipcMain.on('open-settings', () => {
         createWindow('settings.html', 'settingsWindow', { width: 560, height: 800 });
     });
@@ -142,6 +159,7 @@ app.on('ready', () => {
 
     ipcMain.on('config-saved-settings', (event, newConfig) => {
         configManager.writeConfig(newConfig);
+        createWindow('index.html', 'mainWindow', { width: 900, height: 600 });
         closeWindow('settingsWindow');
     });
 

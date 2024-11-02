@@ -42,7 +42,7 @@
 
                 <div class="mdui-card-content" style="text-align: left;padding: 11px">
                     <span id="weather-content"
-                         style="font-family: Roboto;width:100%;font-size: 25px;line-height:32px"></span>
+                          style="font-family: Roboto;width:100%;font-size: 25px;line-height:32px"></span>
                 </div>
             </div>
             <div class="mdui-card" id="textbox-1" style="margin-bottom: 8px">
@@ -57,7 +57,8 @@
                     <canvas id="clock"></canvas>
                 </div>
             </div>
-            <div class="mdui-card mdui-shadow-0" style="margin-top: 8px;background: rgb(255,255,255,0.1);backdrop-filter: blur(20px)">
+            <div class="mdui-card mdui-shadow-0"
+                 style="margin-top: 8px;background: rgb(255,255,255,0.1);backdrop-filter: blur(20px)">
                 <div style="text-align: center;margin: 8px 0 8px 0;">
                     <h1 id="time-container"></h1>
                     <h3 id="hitokoto">一言载入中...</h3>
@@ -79,7 +80,7 @@
                          style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
                 </div>
                 <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container">
-                    <h2 >距离 <span id="countdown-intro" style="font-size: 40px"></span> 还有</h2>
+                    <h2>距离 <span id="countdown-intro" style="font-size: 40px"></span> 还有</h2>
                     <h1 style="font-size:30px" id="countdown"></h1>
                 </div>
             </div>
@@ -113,8 +114,10 @@
         onclick="ipcRenderer.send('close-window','timerWindow');ipcRenderer.send('open-window','index.html', 'mainWindow', { width: 900, height: 600 })">
     <i class="mdui-icon material-icons">exit_to_app</i>
 </button>
-<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:14px;color:rgb(50,50,50,0.5)"><br/>Author：云默安 | Copyright &copy; 2024 ZGIT | GPL
-    3.0 license | 机构: <span id="company"></span> | <span id="app-version"></span> | * 天气数据来自高德地图接口，数据仅供参考。</div>
+<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:14px;color:rgb(50,50,50,0.5)"><br/>Author：云默安
+    | Copyright &copy; 2024 ZGIT | GPL
+    3.0 license | 机构: <span id="company"></span> | <span id="app-version"></span> | * 天气数据来自高德地图接口，数据仅供参考。
+</div>
 
 <script>
     const {ipcRenderer} = require('electron');
@@ -124,7 +127,7 @@
         document.getElementById('app-version').innerText = version;
     });
 
-    mdui.snackbar('正在初始化...', { timeout: 500,position: 'right-bottom' })
+    mdui.snackbar('正在初始化...', {timeout: 500, position: 'right-bottom'})
     const music = new Audio('assets/startup.mp3');
     music.play();
 
@@ -268,140 +271,163 @@
 
     window.onload = () => {
         ipcRenderer.invoke('get-config').then((config) => {
-            timeFormat = config['time-format'];
-            const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
-            const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
+                timeFormat = config['time-format'];
+                const marquee_top = new Marquee('marquee-top', config['marquee-top'], config['marquee-top-speed']);
+                const marquee_bottom = new Marquee('marquee-bottom', config['marquee-bottom'], config['marquee-bottom-speed']);
 
-            document.getElementById('company').innerText = config['unit-code'];
-            ipcRenderer.invoke('get-config-directory').then((path) => {
-                const videoPlayer = document.getElementById('videoPlayer');
-                videoPlayer.src = path + '/play.mp4';
-                if (config['background-image']) {
-                    document.body.style.background = "url(" + path + "/" + config['background-image'] + ") no-repeat";
-                    document.body.style.backgroundSize = "cover";
-                }
-
-                const muteButton = document.getElementById('mute-button');
-                const muteIcon = document.getElementById('mute-icon');
-
-                muteButton.addEventListener('click', () => {
-                    if (videoPlayer.muted) {
-                        videoPlayer.muted = false;
-                        muteIcon.textContent = 'volume_up';
-                    } else {
-                        videoPlayer.muted = true;
-                        muteIcon.textContent = 'volume_off';
+                document.getElementById('company').innerText = config['unit-code'];
+                ipcRenderer.invoke('get-config-directory').then((path) => {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    videoPlayer.src = path + '/play.mp4';
+                    if (config['background-image']) {
+                        document.body.style.background = "url(" + path + "/" + config['background-image'] + ") no-repeat";
+                        document.body.style.backgroundSize = "cover";
                     }
-                });
-            });
 
-            document.getElementById('videoPlayer').volume = config['video-volume'];
+                    const muteButton = document.getElementById('mute-button');
+                    const muteIcon = document.getElementById('mute-icon');
 
-            if (config['UseCountdown']) {
-                const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
-                const countdownIntro = config['countdown-intro'];
-                const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
-                document.getElementById('textbox-2').style.display = 'none';
-            } else {
-                if (config['countdowntext']) {
-                    document.getElementById('textbox-2-content').innerText = config['countdowntext'];
-                } else {
-                    document.getElementById('textbox-2').style.display = 'none';
-                }
-                document.getElementById('countdown-container').style.display = 'none';
-            }
-
-            if (config['clock-mode']) {
-                const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
-                document.getElementById('textbox-1').style.display = 'none';
-            } else {
-                if (config['text-1']) {
-                    document.getElementById('textbox-1-content').innerText = config['text-1'];
-                } else {
-                    document.getElementById('textbox-1').style.display = 'none';
-                }
-                document.getElementById('gaokao-countdown-container').style.display = 'none';
-            }
-
-            if (config['hitokoto']) {
-                setInterval(async () => {
-                    mdui.snackbar('计划任务：正在获取新的一言', { timeout: 500, position: 'right-bottom' });
-                    const data = await fetchHitokoto();
-                    if (data) {
-                        mdui.snackbar('一言已更新', { timeout: 1000, position: 'right-bottom' });
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "  \n—— " + data.from;
-                    }
-                }, 300002);
-                fetchHitokoto().then(data => {
-                    if (data) {
-                        mdui.snackbar('计划任务：初始化一言', { timeout: 500, position: 'right-bottom' });
-                        document.getElementById('hitokoto').innerText = data.hitokoto + "   \n—— " + data.from;
-                    }
-                });
-            } else {
-                document.getElementById('hitokoto').style.display = 'none';
-            }
-
-            if (config['weather-code']) {
-                document.getElementById('weather-content').innerText = "正在检查天气...";
-
-                let weatherData = {
-                    today: '',
-                    tomorrow: ''
-                };
-                let showTodayWeather = true;
-
-                // 定义更新天气数据的函数
-                const updateWeather = async () => {
-                    mdui.snackbar('计划任务：正在刷新天气数据', { timeout: 500, position: 'right-bottom' });
-                    try {
-                        // 并发请求天气数据
-                        const [data, threedata] = await Promise.all([
-                            fetchWeather(config['weather-code']),
-                            fetchWeatherThree(config['weather-code'])
-                        ]);
-
-                        if (data && data.result && threedata && threedata.data && threedata.data.data) {
-                            const city = data.result.city;
-                            const weather = `${data.result.weather} ${data.result.temperature} °C ${threedata.data.data[2].air_quality} ${threedata.data.data[1].bearing} | 湿度：${data.result.humidity}%`;
-                            const tomorrowTemp = threedata.data.data[2].temperature;
-                            const tomorrowWeather = threedata.data.data[2].weather;
-                            const tomorrowWind = threedata.data.data[2].bearing;
-                            const tomorrowAQI = threedata.data.data[2].air_quality;
-
-                            weatherData.today = `<span style="font-size:33px;">${city}</span> 今日 ${weather}`;
-                            weatherData.tomorrow = `<span style="font-size:33px;">${city}</span> 明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
-                            toggleWeatherDisplay();
-                            mdui.snackbar('天气数据更新成功', { timeout: 1000, position: 'right-bottom' });
+                    muteButton.addEventListener('click', () => {
+                        if (videoPlayer.muted) {
+                            videoPlayer.muted = false;
+                            muteIcon.textContent = 'volume_up';
+                        } else {
+                            videoPlayer.muted = true;
+                            muteIcon.textContent = 'volume_off';
                         }
-                    } catch (error) {
-                        console.error("Error fetching weather data:", error);
-                    }
-                };
+                    });
+                });
 
-                // 初次加载时立即调用
-                updateWeather();
+                document.getElementById('videoPlayer').volume = config['video-volume'];
 
-                // 设置定时任务，每5分钟刷新一次天气数据
-                setInterval(updateWeather, 300000);
-
-                // 切换显示今日和明日天气
-                const toggleWeatherDisplay = () => {
-                    if (showTodayWeather) {
-                        document.getElementById('weather-content').innerHTML = weatherData.today;
+                if (config['UseCountdown']) {
+                    const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
+                    const countdownIntro = config['countdown-intro'];
+                    const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
+                    document.getElementById('textbox-2').style.display = 'none';
+                } else {
+                    if (config['countdowntext']) {
+                        document.getElementById('textbox-2-content').innerText = config['countdowntext'];
                     } else {
-                        document.getElementById('weather-content').innerHTML = weatherData.tomorrow;
+                        document.getElementById('textbox-2').style.display = 'none';
                     }
-                    showTodayWeather = !showTodayWeather;
-                };
+                    document.getElementById('countdown-container').style.display = 'none';
+                }
 
-                // 每2分钟切换显示今日或明日天气
-                setInterval(toggleWeatherDisplay, 10000); // 每2分钟切换一次
-            } else {
-                document.getElementById('weather').style.display = 'none';
+                if (config['clock-mode']) {
+                    const gaokaoCountdown = new GaokaoCountdown('gaokao-countdown');
+                    document.getElementById('textbox-1').style.display = 'none';
+                } else {
+                    if (config['text-1']) {
+                        document.getElementById('textbox-1-content').innerText = config['text-1'];
+                    } else {
+                        document.getElementById('textbox-1').style.display = 'none';
+                    }
+                    document.getElementById('gaokao-countdown-container').style.display = 'none';
+                }
+
+                if (config['hitokoto']) {
+                    if (config['useHitokotoLocal']) {
+                        mdui.snackbar('将使用本地 Hitokoto 词库', {timeout: 1000, position: 'right-bottom'});
+                        setInterval(async () => {
+                            const data = await ipcRenderer.invoke('get-local-hitokoto');
+                            if (data) {
+                                mdui.snackbar('一言已更新', {timeout: 1000, position: 'right-bottom'});
+                                document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                            }
+                        }, 10000); // 300000 毫秒 = 5 分钟
+                        ipcRenderer.invoke('get-local-hitokoto').then(data => {
+                            if (data) {
+                                document.getElementById('hitokoto').innerText = data.hitokoto + "  —— " + data.from;
+                            }
+                        });
+                    } else {
+                        setInterval(async () => {
+                            mdui.snackbar('计划任务：正在获取新的一言', {timeout: 500, position: 'right-bottom'});
+                            const data = await fetchHitokoto();
+                            if (data) {
+                                mdui.snackbar('一言已更新', {timeout: 1000, position: 'right-bottom'});
+                                document.getElementById('hitokoto').innerText = data.hitokoto + "  \n—— " + data.from;
+                            }
+                        }, 300002);
+                        fetchHitokoto().then(data => {
+                            if (data) {
+                                mdui.snackbar('计划任务：初始化一言', {timeout: 500, position: 'right-bottom'});
+                                document.getElementById('hitokoto').innerText = data.hitokoto + "   \n—— " + data.from;
+                            }
+                        });
+                    }
+
+                } else {
+                    document.getElementById('hitokoto').style.display = 'none';
+                }
+
+                if (config['weather-code']) {
+                    document.getElementById('weather-content').innerText = "正在检查天气...";
+
+                    let weatherData = {
+                        today: '',
+                        tomorrow: ''
+                    };
+                    let showTodayWeather = true;
+
+                    // 定义更新天气数据的函数
+                    const updateWeather = async () => {
+                        mdui.snackbar('计划任务：正在刷新天气数据', {timeout: 500, position: 'right-bottom'});
+                        try {
+                            // 并发请求天气数据
+                            const [data, threedata] = await Promise.all([
+                                fetchWeather(config['weather-code']),
+                                fetchWeatherThree(config['weather-code'])
+                            ]);
+
+                            if (data && data.result && threedata && threedata.data && threedata.data.data) {
+                                const city = data.result.city;
+                                const weather = `${data.result.weather} ${data.result.temperature} °C ${threedata.data.data[2].air_quality} ${threedata.data.data[1].bearing} | 湿度：${data.result.humidity}%`;
+                                const tomorrowTemp = threedata.data.data[2].temperature;
+                                const tomorrowWeather = threedata.data.data[2].weather;
+                                const tomorrowWind = threedata.data.data[2].bearing;
+                                const tomorrowAQI = threedata.data.data[2].air_quality;
+
+                                weatherData.today = `<span style="font-size:33px;">${city}</span> 今日 ${weather}`;
+                                weatherData.tomorrow = `<span style="font-size:33px;">${city}</span> 明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
+                                toggleWeatherDisplay();
+                                mdui.snackbar('天气数据更新成功', {timeout: 1000, position: 'right-bottom'});
+                            }
+                        } catch (error) {
+                            weatherData.today = `获取天气信息失败：` + error;
+                            weatherData.tomorrow = `获取天气信息失败：` + error;
+                            toggleWeatherDisplay();
+                            console.error("Error fetching weather data:", error);
+                        }
+                    };
+
+                    // 初次加载时立即调用
+                    updateWeather();
+
+                    // 设置定时任务，每5分钟刷新一次天气数据
+                    setInterval(updateWeather, 300000);
+
+                    // 切换显示今日和明日天气
+                    const toggleWeatherDisplay = () => {
+                        if (showTodayWeather) {
+                            document.getElementById('weather-content').innerHTML = weatherData.today;
+                        } else {
+                            document.getElementById('weather-content').innerHTML = weatherData.tomorrow;
+                        }
+                        showTodayWeather = !showTodayWeather;
+                    };
+
+                    // 每2分钟切换显示今日或明日天气
+                    setInterval(toggleWeatherDisplay, 10000); // 每2分钟切换一次
+                } else {
+                    document.getElementById('weather').style.display = 'none';
+                }
             }
-        });
-    };
+        )
+        ;
+    }
+    ;
 
 
     async function fetchWeather(adcode) {
@@ -624,17 +650,15 @@
     async function updateNetworkStatus() {
         // const statusElement = document.getElementById('networkStatus');
         // statusElement.textContent = '检测中...';
-        mdui.snackbar('计划任务：正在检查网络状态', { timeout: 500,position: 'right-bottom' })
+        mdui.snackbar('计划任务：正在检查网络状态', {timeout: 500, position: 'right-bottom'})
         const isOnline = await ipcRenderer.invoke('get-network-status');
         const statusText = isOnline ? '已连接到互联网' : '无法访问 Internet ，请及时处理';
-        mdui.snackbar(statusText, { timeout: 1000,position: 'right-bottom' })
+        mdui.snackbar(statusText, {timeout: 1000, position: 'right-bottom'})
     }
 
     setInterval(
         () => updateNetworkStatus()
         , 600000)
-
-
 
 
     updateNetworkStatus();

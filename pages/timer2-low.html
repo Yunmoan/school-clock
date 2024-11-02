@@ -9,9 +9,13 @@
             overflow: hidden;
         }
 
-        canvas {
-            background-color: white;
-            border-radius: 50%;
+        #J_dotLine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1; /* 将 canvas 放在最底层，避免遮挡其他内容 */
         }
 
         #marquee-top {
@@ -37,67 +41,73 @@
 <div class="mdui-container-fluid">
     <div class="mdui-row">
 
-        <div class="mdui-col-xs-5 mdui-col-sm-4">
-            <div class="mdui-card" id="weather-box" style="margin-bottom: 8px">
+        <div class="mdui-col-xs-12 mdui-col-sm-12">
+            <div class="mdui-card" style="margin-bottom: 8px;height: 12vh">
+                <div class="mdui-card-content" id="marquee-top" style="height: 100%;">
+                </div>
+            </div>
 
+        </div>
+
+
+        <div class="mdui-col-xs-4 mdui-col-sm-4">
+            <div class="mdui-card mdui-shadow-0"
+                 style="margin-bottom: 8px;background: rgb(255,255,255,0.1);backdrop-filter: blur(20px)">
+                <div style="text-align: center;margin: 8px 0 8px 0;">
+                    <span style="font-size:48px;" id="time-container"></span>
+
+                </div>
+            </div>
+            <div class="mdui-card" id="weather-box" style="margin-bottom: 8px">
                 <div class="mdui-card-content" style="text-align: left;padding: 11px">
                     <span id="weather-content"
-                          style="font-family: Roboto;width:100%;font-size: 19px;line-height:28px"></span>
+                          style="font-family: Roboto;width:100%;font-size: 25px;line-height:32px"></span>
                 </div>
             </div>
             <div class="mdui-card" id="textbox-1" style="margin-bottom: 8px">
-
                 <div class="mdui-card-content" style="text-align: center;padding: 15px">
                     <pre id="textbox-1-content"
                          style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
                 </div>
             </div>
-            <div class="mdui-card mdui-shadow-0" style="background: rgb(255,255,255,0)">
-                <div style="text-align: center;margin: 8px 0 8px 0;">
-                    <canvas id="clock"></canvas>
+            <div class="mdui-card" id="gaokao-countdown-container">
+                <div class="mdui-card-media">
+                    <img src="assets/gaokaojiayou.jpg" height="140" width="auto"/>
+                    <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
+                        <div class="mdui-card-primary">
+                            <div id="gaokao-countdown"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="mdui-card mdui-shadow-0"
                  style="margin-top: 8px;background: rgb(255,255,255,0.1);backdrop-filter: blur(20px)">
                 <div style="text-align: center;margin: 8px 0 8px 0;">
-                    <h1 id="time-container"></h1>
-                    <span style="font-size: 18px;" id="hitokoto">一言载入中...</span>
+
+                    <h1 id="hitokoto">一言载入中...</h1>
                 </div>
             </div>
-            <div class="mdui-card" id="gaokao-countdown-container" style="margin-top: 8px">
-                <div class="mdui-card-media">
-                    <img src="assets/gaokaojiayou.jpg" height="100" width="auto"/>
-                    <div class="mdui-card-media-covered mdui-card-media-covered-transparent">
-                        <div class="mdui-card-primary">
-                            <div id="gaokao-countdown" style="padding-top: 18px"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <div class="mdui-card" style="margin-top: 8px">
                 <div class="mdui-card-content" style="text-align: center;padding: 5px" id="textbox-2">
                     <pre id="textbox-2-content"
                          style="white-space: pre-wrap;font-family: Roboto;width:100%;font-size: 25px"></pre>
                 </div>
                 <div style="text-align: center;margin: 8px 0 8px 0;" id="countdown-container">
-                    <span style="font-size:25px">距离 <span id="countdown-intro"
-                                                            style="font-size: 30px"></span> 还有</span><br/>
-                    <span style="font-size:30px" id="countdown"></span>
+                    <h2>距离 <span id="countdown-intro" style="font-size: 40px"></span> 还有</h2>
+                    <h1 style="font-size:30px" id="countdown"></h1>
                 </div>
             </div>
         </div>
         <div class="mdui-col-xs-8 mdui-col-sm-8">
-            <div class="mdui-card" style="margin-bottom: 8px;height: 15vh">
-                <div class="mdui-card-content" id="marquee-top" style="height: 100%;">
-                </div>
-            </div>
+
             <div class="mdui-card">
                 <video id="videoPlayer" autoplay loop width="100%" height="100%">
                     <source src="" type="video/mp4">
                     播放异常，请联系管理员
                 </video>
             </div>
-            <div class="mdui-card" style="margin-top: 8px;height: 15vh">
+            <div class="mdui-card" style="margin-top: 8px;height: 12vh">
                 <div class="mdui-card-content" id="marquee-bottom" style="height: 100%;">
                 </div>
             </div>
@@ -115,14 +125,13 @@
         onclick="ipcRenderer.send('close-window','timerWindow');ipcRenderer.send('open-window','index.html', 'mainWindow', { width: 900, height: 600 })">
     <i class="mdui-icon material-icons">exit_to_app</i>
 </button>
-<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:12px;color:rgb(50,50,50,0.5)"><br/>Author：云默安
+<div style="display: block;left:10px;bottom: 5px;position: fixed;font-size:14px;color:rgb(50,50,50,0.5)"><br/>Author：云默安
     | Copyright &copy; 2024 ZGIT | GPL
-    3.0 license | 机构: <span id="company"></span> | <span id="app-version"></span>(低分辨率模式) | *
-    天气数据来自高德地图接口，数据仅供参考。
+    3.0 license | 机构: <span id="company"></span> | <span id="app-version"></span>(低分辨率模式) | * 天气数据来自高德地图接口，数据仅供参考。
 </div>
-
 <script>
     const {ipcRenderer} = require('electron');
+
     // 获取版本号并显示在页面上
     ipcRenderer.invoke('get-app-version').then((version) => {
         document.getElementById('app-version').innerText = version;
@@ -255,7 +264,7 @@
                 const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
                 this.container.innerHTML = `
-                <span style="font-size:30px;color: #ffffff">距离 <span style="font-size: 38px">${gaokaoyear}高考</span> 还有 <br/><span style="color: rgb(246,188,113);font-size: 30px"> ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒</span></span>`;
+                <h1 style=";color: #ffffff">距离 <span style="font-size: 42px">${gaokaoyear}高考</span> 还有 <br/><span style="color: rgb(246,188,113);font-size: 42px"> ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒</span></h1>`;
             } else if (now >= targetDate && now <= endDate) {
                 this.container.innerHTML = `<h1>同学们，高考加油！</h1>`;
             } else {
@@ -281,11 +290,10 @@
                 const videoPlayer = document.getElementById('videoPlayer');
                 videoPlayer.src = path + '/play.mp4';
                 if (config['background-image']) {
-                    document.body.style.background = "url(" + path + "/" + config['background-image'] + ") no-repeat";//通过js控制改变行内样式
+                    document.body.style.background = "url(" + path + "/" + config['background-image'] + ") no-repeat";
                     document.body.style.backgroundSize = "cover";
                 }
 
-                // 添加静音按钮功能
                 const muteButton = document.getElementById('mute-button');
                 const muteIcon = document.getElementById('mute-icon');
 
@@ -303,7 +311,6 @@
             document.getElementById('videoPlayer').volume = config['video-volume'];
 
             if (config['UseCountdown']) {
-                // 初始化倒计时组件
                 const countdownDate = moment(config['countdown-date'], 'YYYY-MM-DD HH:mm:ss').toDate();
                 const countdownIntro = config['countdown-intro'];
                 const countdownDisplay = new Countdown('countdown-container', countdownDate, countdownIntro);
@@ -328,6 +335,7 @@
                 }
                 document.getElementById('gaokao-countdown-container').style.display = 'none';
             }
+
             if (config['hitokoto']) {
                 if (config['useHitokotoLocal']) {
                     mdui.snackbar('将使用本地 Hitokoto 词库', {timeout: 1000, position: 'right-bottom'});
@@ -362,6 +370,7 @@
             } else {
                 document.getElementById('hitokoto').style.display = 'none';
             }
+
             if (config['weather-code']) {
                 document.getElementById('weather-content').innerText = "正在检查天气...";
 
@@ -389,8 +398,8 @@
                             const tomorrowWind = threedata.data.data[2].bearing;
                             const tomorrowAQI = threedata.data.data[2].air_quality;
 
-                            weatherData.today = `<span style="font-size:28px;">${city}</span> 天气<br/>今日 ${weather}`;
-                            weatherData.tomorrow = `<span style="font-size:28px;">${city}</span> 天气<br/>明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
+                            weatherData.today = `<span style="font-size:33px;">${city}</span> 今日 ${weather}`;
+                            weatherData.tomorrow = `<span style="font-size:33px;">${city}</span> 明日 ${tomorrowWeather} | ${tomorrowTemp} (${tomorrowAQI}) ${tomorrowWind}`;
                             toggleWeatherDisplay();
                             mdui.snackbar('天气数据更新成功', {timeout: 1000, position: 'right-bottom'});
                         }
@@ -423,9 +432,9 @@
             } else {
                 document.getElementById('weather').style.display = 'none';
             }
-
         });
     };
+
 
     async function fetchWeather(adcode) {
         try {
@@ -515,134 +524,6 @@
 
     const timeDisplay = new TimeDisplay('time-container');
 
-    const canvas = document.getElementById('clock');
-    canvas.width = document.documentElement.clientWidth * 0.15;
-    canvas.height = document.documentElement.clientWidth * 0.15;
-    const ctx = canvas.getContext('2d');
-    const radius = canvas.width / 2;
-    ctx.translate(radius, radius);
-
-    async function fetchConfigAndStartClock() {
-        startClock();
-    }
-
-
-    function drawClock() {
-        drawFace(ctx, radius);
-        drawNumbers(ctx, radius);
-        drawCenter(ctx);
-    }
-
-    function drawFace(ctx, radius) {
-        ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = 'white';
-        ctx.fill();
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = radius * 0.05;
-        ctx.stroke();
-    }
-
-    function drawNumbers(ctx, radius) {
-        ctx.font = radius * 0.15 + "px arial";
-        ctx.textBaseline = "middle";
-        ctx.textAlign = "center";
-        ctx.fillStyle = '#000';
-        for (let num = 1; num <= 12; num++) {
-            let ang = num * Math.PI / 6;
-            ctx.rotate(ang);
-            ctx.translate(0, -radius * 0.85);
-            ctx.rotate(-ang);
-            ctx.fillText(num.toString(), 0, 0);
-            ctx.rotate(ang);
-            ctx.translate(0, radius * 0.85);
-            ctx.rotate(-ang);
-        }
-    }
-
-    function drawCenter(ctx) {
-        ctx.beginPath();
-        ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
-        ctx.fillStyle = '#000';
-        ctx.fill();
-    }
-
-    function getCurrentTime() {
-        const now = new Date();
-        const hour = now.getHours() % 12;
-        const minute = now.getMinutes();
-        const second = now.getSeconds();
-        const millisecond = now.getMilliseconds();
-
-        return {
-            hour: (hour * Math.PI / 6) + (minute * Math.PI / 360) + (second * Math.PI / 21600),
-            minute: (minute * Math.PI / 30) + (second * Math.PI / 1800),
-            second: (second * Math.PI / 30) + (millisecond * Math.PI / 30000)
-        };
-    }
-
-    function drawHand(ctx, pos, length, width) {
-        ctx.beginPath();
-        ctx.lineWidth = width;
-        ctx.lineCap = "block";
-        ctx.strokeStyle = '#000';
-        ctx.moveTo(0, 0);
-        ctx.rotate(pos);
-        ctx.lineTo(0, -length);
-        ctx.stroke();
-        ctx.rotate(-pos);
-    }
-
-    function startClock() {
-        const endAngles = getCurrentTime();
-        let startTime = Date.now();
-        let durations = {
-            second: 3000,
-            minute: 2000,
-            hour: 1000
-        };
-
-        const animate = () => {
-            let currentTime = Date.now();
-            let elapsed = currentTime - startTime;
-
-            ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
-            drawClock();
-
-            const secondAngle = elapsed < durations.second
-                ? (elapsed / durations.second) * endAngles.second
-                : endAngles.second;
-
-            const minuteAngle = elapsed < durations.minute
-                ? (elapsed / durations.minute) * endAngles.minute
-                : endAngles.minute;
-
-            const hourAngle = elapsed < durations.hour
-                ? (elapsed / durations.hour) * endAngles.hour
-                : endAngles.hour;
-
-            drawHand(ctx, hourAngle, radius * 0.5, radius * 0.05);
-            drawHand(ctx, minuteAngle, radius * 0.8, radius * 0.05);
-            drawHand(ctx, secondAngle, radius * 0.9, radius * 0.02);
-
-            if (elapsed < durations.hour || elapsed < durations.minute || elapsed < durations.second) {
-                requestAnimationFrame(animate);
-            } else {
-                const smoothTimeUpdate = () => {
-                    ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
-                    drawClock();
-                    const currentAngles = getCurrentTime();
-                    drawHand(ctx, currentAngles.hour, radius * 0.5, radius * 0.05);
-                    drawHand(ctx, currentAngles.minute, radius * 0.8, radius * 0.05);
-                    drawHand(ctx, currentAngles.second, radius * 0.9, radius * 0.02);
-                    requestAnimationFrame(smoothTimeUpdate);
-                };
-                smoothTimeUpdate();
-            }
-        };
-
-        animate();
-    }
 
     async function updateNetworkStatus() {
         // const statusElement = document.getElementById('networkStatus');
@@ -656,9 +537,9 @@
     setInterval(
         () => updateNetworkStatus()
         , 600000)
+
+
     updateNetworkStatus();
-
-
     fetchConfigAndStartClock();
 </script>
 </body>
